@@ -1,0 +1,29 @@
+{
+  "name": "mm",
+  "version": "1.0.0",
+  "description": "CLI tools to do everything mechmania (upload a new script to server, queue games, update your local package, etc.)",
+  "main": "index.js",
+  "repository": "https://github.com/pranaygp/mm-cli-tools",
+  "author": "Pranay Prakash <pranay.gp@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "build": "yarn run flow-remove-types src/ --out-dir lib && pkg . --out-path dist/"
+  },
+  "bin": "lib/index.js",
+  "pkg": {
+    "targets": [
+      "node9-macos-x64",
+      "node9-linux-x86",
+      "node9-win-x86"
+    ]
+  },
+  "dependencies": {
+    "yargs": "^11.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^4.18.0",
+    "flow-bin": "^0.66.0",
+    "flow-remove-types": "^1.2.3",
+    "pkg": "^4.3.0"
+  }
+}

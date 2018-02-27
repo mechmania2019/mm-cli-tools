@@ -7,14 +7,14 @@
   "author": "Pranay Prakash <pranay.gp@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "build": "yarn run flow-remove-types src/ --out-dir lib && pkg . --out-path dist/"
+    "build": "flow-remove-types src/ --out-dir lib && pkg . --out-path dist/"
   },
   "bin": "lib/index.js",
   "pkg": {
     "targets": [
-      "node9-macos-x64",
-      "node9-linux-x86",
-      "node9-win-x86"
+      "node8-macos",
+      "node8-linux",
+      "node8-win"
     ]
   },
   "dependencies": {

@@ -26,7 +26,7 @@ const setup = async () => {
   try {
     await stat(config('auth'));
   } catch(e) {
-    await writeFile(config('auth'), '')
+    await writeFile(config('auth'), '{}')
   }
 }
 

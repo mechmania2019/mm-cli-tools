@@ -4,17 +4,32 @@ const config = require('./config')
 const fs = require('fs')
 const { promisify } = require('util')
 
+const { login: serverLogin } = require('../api')
+
 const readFile = promisify(fs.readFile)
 const writeFile = promisify(fs.writeFile)
 
 const authFile = config('auth')
 
-const isLoggedIn = async () => (await readFile(authFile, 'utf8')).length > 0
-const getToken = async () => await readFile(authFile, 'utf8')
-const setToken = async (token) => await writeFile(authFile, token)
+export type Team = {
+  _id: String, 
+  name: String,
+  latestScript: ?String,
+  admin: ?Boolean,
+  token: String
+}
+
+const login = async (token: string): Promise<?Team> => {
+  const user = await serverLogin(token)
+  await writeFile(authFile, JSON.stringify(user))
+  return user;
+}
+const getTeam = async (): Promise<Team> => {
+  const data: string = await readFile(authFile, 'utf8')
+  return JSON.parse(data)
+}
 
 module.exports = {
-  isLoggedIn,
-  getToken,
-  setToken
+  login,
+  getTeam
 }

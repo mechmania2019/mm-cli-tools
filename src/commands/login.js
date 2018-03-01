@@ -1,33 +1,29 @@
 // @flow
 const path = require('path')
 
-module.exports.command = 'login [team-name] [password]'
+const { login } = require('../utils/auth')
+
+module.exports.command = 'login [passphrase]'
 module.exports.describe = 'Login to your team\'s account'
 
 module.exports.builder = (yargs: any) => yargs
-  .positional('team-name', {
+  .positional('passphrase', {
     type: 'string',
-    describe: 'Team name'
-  })
-  .positional('password', {
-    type: 'string',
-    describe: 'Team password'
+    describe: 'Your team\s generated passphrase'
   })
 
-module.exports.handler = (argv: any) => {
-  let teamName = argv.teamName;
-  let password = argv.password;
+module.exports.handler = async (argv: { passphrase: string }) => {
+  let token = argv.passphrase;
 
-  if(!teamName) {
-    // TODO: Prompt for team name
-  }
-  if(!password) {
-    // TODO: Prompt for password
+  if(!token) {
+    // TODO: Prompt for passphrase
   }
 
-  // TODO: Make request to login microservice
-  // TODO: Show error if request says invalid user/credentials
-  // TODO: Save token to local file
+  const team = await login(token)
 
-  console.log('Logged in %s', teamName)
+  if(!team) {
+    console.log('Failed to login')
+  } else {
+    console.log('Logged in as %s', team.name)
+  }
 }

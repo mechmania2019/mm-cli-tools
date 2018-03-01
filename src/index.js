@@ -2,18 +2,16 @@
 //@flow
 const yargs = require('yargs');
 
-const argv = yargs
-  .commandDir('./commands')
-  .help('help')
-  .alias('h', 'help')
-  .argv;
+const config = require('./utils/config');
+const { getLocalVersion } = require('./utils/version');
 
-  // checkCommands(yargs, argv, 1)
-
-  // function checkCommands (yargs, argv, numRequired) {
-  //   if (argv._.length < numRequired) {
-  //     yargs.showHelp()
-  //   } else {
-  //     // TODO: check for unknown command
-  //   }
-  // }
+(async () => {
+  await config.setup()
+  const argv = yargs
+    .commandDir('./commands')
+    .help('help')
+    .alias('h', 'help')
+    .alias('v', 'version')
+    .version(await getLocalVersion())
+    .argv;
+})()

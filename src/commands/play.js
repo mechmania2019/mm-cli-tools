@@ -11,14 +11,14 @@ module.exports.builder = (yargs: any) => yargs
   })
   .option('no-visualizer', {
     type: 'boolean',
-    describe: 'Just build and save the logfile without starting the visualizer'
+    describe: 'Just build and save the logfile without starting the visualizer',
   })
   .option('logfile', {
     type: 'string',
-    describe: 'Provide a path to a logfile to write the results of the game engine into (the file can be used as the input to the visualizer'
+    describe: 'Provide a path to a logfile to write the results of the game engine into (the file can be used as the input to the visualizer',
   })
 
-module.exports.handler = (argv: any) => {
+module.exports.handler = (argv: {script: string, noVisualizer: ?boolean, logfile: ?string}) => {
   const script = path.resolve(argv.script)
 
   // TODO: Start game engine with the path to the script

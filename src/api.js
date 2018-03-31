@@ -15,7 +15,6 @@ const login = async (token : string): Promise<?Team> => {
   return await res.json()
 }
 
-
 module.exports = {
   login
 }

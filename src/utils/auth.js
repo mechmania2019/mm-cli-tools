@@ -24,9 +24,10 @@ const login = async (token: string): Promise<?Team> => {
   await writeFile(authFile, JSON.stringify(user))
   return user;
 }
-const getTeam = async (): Promise<Team> => {
+const getTeam = async (): Promise<?Team> => {
   const data: string = await readFile(authFile, 'utf8')
-  return JSON.parse(data)
+  const team = JSON.parse(data)
+  return team._id && team
 }
 
 module.exports = {

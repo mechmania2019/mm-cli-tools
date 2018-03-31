@@ -10,7 +10,7 @@ module.exports.builder = (yargs: any) => yargs
     describe: 'Path to your bot\'s script'
   })
 
-module.exports.handler = (argv: any) => {
+module.exports.handler = (argv: {script: string}) => {
   const script = path.resolve(argv.script)
 
   // TODO: Check if the server already has the script (SHA 256 hash)

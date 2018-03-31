@@ -14,7 +14,7 @@ module.exports.builder = (yargs: any) => yargs
     default: 'me'  //TODO: get self teamID
   })
 
-module.exports.handler = (argv: any) => {
+module.exports.handler = (argv: {team: string, team2: string}) => {
   const team1 = argv.team
   const team2 = argv.team2
   // TODO: Fetch logfile from server

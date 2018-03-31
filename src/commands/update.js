@@ -16,7 +16,7 @@ module.exports.builder = (yargs: any) => yargs
     describe: 'Skip version match check'
   })
 
-module.exports.handler = (argv: any) => {
+module.exports.handler = (argv: {dir: string, force: boolean}) => {
   const dir = path.resolve(argv.dir)
   // TODO: Get local game files version (how?)
   // TODO: Check if server version matches the local game files version (skip if force)

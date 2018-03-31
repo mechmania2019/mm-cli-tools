@@ -15,6 +15,9 @@
       "node8-macos",
       "node8-linux",
       "node8-win"
+    ],
+    "scripts": [
+        "lib/commands"
     ]
   },
   "dependencies": {

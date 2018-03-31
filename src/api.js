@@ -15,6 +15,14 @@ const login = async (token : string): Promise<?Team> => {
   return await res.json()
 }
 
+const register = async (name : string, email: string): Promise<?Team> => {
+  const res = await fetch('http://localhost:3000', { body:JSON.stringify({name, email}), method:'POST'})
+  if(res.status === 401) return null
+  if(res.status !== 200) throw Error('An unknown error occurred on the server ' + res.status)
+  return await res.json()
+}
+
 module.exports = {
-  login
+  login,
+  register
 }

@@ -4,7 +4,7 @@ const config = require('./config')
 const fs = require('fs')
 const { promisify } = require('util')
 
-const { login: serverLogin } = require('../api')
+const { login: serverLogin, register: serverRegister } = require('../api')
 
 const readFile = promisify(fs.readFile)
 const writeFile = promisify(fs.writeFile)
@@ -29,8 +29,14 @@ const getTeam = async (): Promise<?Team> => {
   const team = JSON.parse(data)
   return team._id && team
 }
+const register = async (name : string, email: string): Promise<?Team> => {
+  const user = await serverRegister(name, email)
+  await writeFile(authFile, JSON.stringify(user))
+  return user
+}
 
 module.exports = {
   login,
-  getTeam
+  getTeam,
+  register
 }

@@ -24,8 +24,8 @@ module.exports.handler = async (argv: {}) => {
   if(!team) {
     console.log('Failed to register - Team may already exist')
   } else {
-    console.log('Registered in as %s and your token is %s', team.name, team.token)
-    console.log('Ask your friends to run `mm login ${token}` to join')
+    console.log('Registered in as %s', team.name)
+    console.log(`Ask your friends to run \`mm login ${team.token}\` to join`)
   }
 
   rl.close()

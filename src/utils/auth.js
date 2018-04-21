@@ -27,7 +27,7 @@ const login = async (token: string): Promise<?Team> => {
 const getTeam = async (): Promise<?Team> => {
   const data: string = await readFile(authFile, 'utf8')
   const team = JSON.parse(data)
-  return team._id && team
+  return team
 }
 const register = async (name : string, email: string): Promise<?Team> => {
   const user = await serverRegister(name, email)

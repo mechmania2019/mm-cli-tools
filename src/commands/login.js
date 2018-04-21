@@ -1,8 +1,10 @@
 // @flow
 const path = require('path')
 
+const chalk = require('chalk');
+
 const { login } = require('../utils/auth')
-const { rl, cmdQuestion } = require('../utils/prompt')
+const { createRL, cmdQuestion } = require('../utils/prompt')
 
 module.exports.command = 'login [passphrase]'
 module.exports.describe = 'Login to your team\'s account'
@@ -16,6 +18,8 @@ module.exports.builder = (yargs: any) => yargs
 module.exports.handler = async (argv: { passphrase: string }) => {
   let token = argv.passphrase;
 
+  const close = createRL();
+
   if(!token) {
     // Prompt for passphrase
     token = await cmdQuestion('Enter passphrase: ')
@@ -26,9 +30,9 @@ module.exports.handler = async (argv: { passphrase: string }) => {
   if(!team) {
     console.log('Failed to login')
   } else {
-    console.log('Logged in as %s', team.name)
+    console.log('Logged in as %s', chalk.red(team.name))
   }
   // TODO: save login status/token 
 
-  rl.close()
+  close()
 }

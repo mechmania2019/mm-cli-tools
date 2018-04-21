@@ -5,7 +5,6 @@ const path = require('path')
 // var archive = archiver('zip');
 const file_system = require('fs');
 const archiver = require('archiver');
-const { rl } = require('../utils/prompt')
 const { push } = require('../api')
 
 const { getTeam } = require('../utils/auth')
@@ -33,8 +32,5 @@ module.exports.handler = (argv: {script: string}) => {
   const archive = archiver('zip');
   push("Pranay", archive);
   archive.directory(script, true, { date: new Date() });  
-  archive.finalize();  
-  rl.close();
-
-
+  archive.finalize();
 }

@@ -4,6 +4,8 @@ const fetch = require('node-fetch')
 
 import type { Team } from './utils/auth'
 
+const { getTeam } = require('./utils/auth')
+
 const login = async (token : string): Promise<?Team> => {
   const res = await fetch('https://login.mechmania.io', {
     headers: {
@@ -23,19 +25,21 @@ const register = async (name : string, email: string): Promise<?Team> => {
 }
 
 const push = async (teamname: string, script: ReadableStream): Promise<?Team> => {
-  console.log('hi')
+  const team = await getTeam();
+  if(!team) {
+    throw new Error('Not logged in');
+  }
   const myScript = await script;
   const res = await fetch('http://localhost:3000/' + teamname, {
     method: 'POST', 
     body: script, 
     headers: {
-      'Authorization': 'Bearer 334dcad9-3ca1-419c-a6ab-ed3e100bc94b'
+      'Authorization': `Bearer ${team.token}`
     }
   })
 
-
-  if(res.status === 401) return null
-  if(res.status !== 200) throw Error('An unknown error occurred on the server ' + res.status)
+  if (res.status === 401) return null
+  if (res.status !== 200) throw Error('An unknown error occurred on the server ' + res.status)
   return await res.json()
 }
 

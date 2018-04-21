@@ -7,10 +7,6 @@ const file_system = require('fs');
 const archiver = require('archiver');
 const { push } = require('../api')
 
-const { getTeam } = require('../utils/auth')
-
-
-
 module.exports.command = 'push <script>'
 module.exports.describe = 'Push your bot directory to the mechmania servers to generate stats and replays against other teams'
 

@@ -35,7 +35,7 @@ const register = async (name : string, email: string): Promise<?Team> => {
   return user
 }
 
-module.exports = {
+module.exports = {  
   login,
   getTeam,
   register

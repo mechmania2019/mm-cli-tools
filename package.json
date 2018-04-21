@@ -17,10 +17,12 @@
       "node8-win"
     ],
     "scripts": [
-        "lib/commands"
+      "lib/commands"
     ]
   },
   "dependencies": {
+    "archiver": "^2.1.1",
+    "fs": "^0.0.1-security",
     "node-fetch": "^2.0.0",
     "yargs": "^11.0.0"
   },

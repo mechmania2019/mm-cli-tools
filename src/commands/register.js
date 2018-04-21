@@ -19,7 +19,7 @@ module.exports.handler = async (argv: {}) => {
   const name = await cmdQuestion('Team Name: ')
   const email = await cmdQuestion('Email: ')
 
-  const team = await register(name, email)
+  const team = await register(name, email);
 
   if(!team) {
     console.log('Failed to register - Team may already exist')

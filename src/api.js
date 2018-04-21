@@ -22,7 +22,7 @@ const register = async (name : string, email: string): Promise<?Team> => {
   return await res.json()
 }
 
-const push = async (teamname: string, script: ReadableStreamews): Promise<?Team> => {
+const push = async (teamname: string, script: ReadableStream): Promise<?Team> => {
   console.log('hi')
   const myScript = await script;
   const res = await fetch('http://localhost:3000/' + teamname, {

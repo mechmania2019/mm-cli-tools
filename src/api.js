@@ -4,8 +4,6 @@ const fetch = require('node-fetch')
 
 import type { Team } from './utils/auth'
 
-const { getTeam } = require('./utils/auth')
-
 const login = async (token : string): Promise<?Team> => {
   const res = await fetch('https://login.mechmania.io', {
     headers: {
@@ -24,13 +22,12 @@ const register = async (name : string, email: string): Promise<?Team> => {
   return await res.json()
 }
 
-const push = async (teamname: string, script: ReadableStream): Promise<?Team> => {
-  const team = await getTeam();
+const push = async (team: ?Team, script: ReadableStream): Promise<?Team> => {
   if(!team) {
     throw new Error('Not logged in');
   }
   const myScript = await script;
-  const res = await fetch('http://localhost:3000/' + teamname, {
+  const res = await fetch('http://localhost:3000/' + team.name, {
     method: 'POST', 
     body: script, 
     headers: {

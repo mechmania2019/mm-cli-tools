@@ -6,6 +6,7 @@ const chalk = require('chalk');
 
 const { register } = require('../utils/auth')
 const { createRL, cmdQuestion } = require('../utils/prompt')
+const handleErrors = require('../utils/handleErrors')
 
 module.exports.command = 'register'
 module.exports.describe = 'Create a new team'
@@ -16,7 +17,7 @@ module.exports.builder = (yargs: any) => yargs
     describe: 'Your team\s generated passphrase'
   })
 
-module.exports.handler = async (argv: {}) => {
+module.exports.handler = handleErrors(async (argv: {}) => {
   const close = createRL();
   // prompt Team name and Email
   const name = await cmdQuestion('Team Name: ')
@@ -32,4 +33,4 @@ module.exports.handler = async (argv: {}) => {
   }
 
   close()
-}
+});

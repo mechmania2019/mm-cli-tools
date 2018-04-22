@@ -5,6 +5,7 @@ const chalk = require('chalk');
 
 const { login } = require('../utils/auth')
 const { createRL, cmdQuestion } = require('../utils/prompt')
+const handleErrors = require('../utils/handleErrors')
 
 module.exports.command = 'login [passphrase]'
 module.exports.describe = 'Login to your team\'s account'
@@ -15,7 +16,7 @@ module.exports.builder = (yargs: any) => yargs
     describe: 'Your team\s generated passphrase'
   })
 
-module.exports.handler = async (argv: { passphrase: string }) => {
+module.exports.handler = handleErrors(async (argv: { passphrase: string }) => {
   let token = argv.passphrase;
 
   const close = createRL();
@@ -32,7 +33,6 @@ module.exports.handler = async (argv: { passphrase: string }) => {
   } else {
     console.log('Logged in as %s', chalk.red(team.name))
   }
-  // TODO: save login status/token 
 
   close()
-}
+})

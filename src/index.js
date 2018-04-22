@@ -9,7 +9,6 @@ const { getLocalVersion } = require('./utils/version');
   await config.setup()
   const argv = yargs
     .commandDir('./commands')
-    .help('help')
     .alias('h', 'help')
     .alias('v', 'version')
     .version(await getLocalVersion())

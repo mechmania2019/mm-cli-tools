@@ -3,13 +3,14 @@ const path = require('path')
 const chalk = require('chalk');
 
 const { getTeam } = require('../utils/auth')
+const handleErrors = require('../utils/handleErrors')
 
 module.exports.command = 'whoami'
-module.exports.describe = 'Logs currently logged in team'
+module.exports.describe = 'Get your team name and login token'
 
 module.exports.builder = (yargs: any) => yargs
 
-module.exports.handler = async (argv: {}) => {
+module.exports.handler = handleErrors(async (argv: {}) => {
   const team = await getTeam();
 
   if(!team) {
@@ -17,4 +18,4 @@ module.exports.handler = async (argv: {}) => {
   }
   console.log(`Team ${chalk.red(team.name)}`);
   console.log(`To have more people join your team, tell them to run \`mm login ${chalk.blue(team.token)}\``);
-}
+})

@@ -8,6 +8,7 @@ const archiver = require('archiver');
 const { push } = require('../api')
 
 const { getTeam } = require('../utils/auth');
+const handleErrors = require('../utils/handleErrors')
 
 module.exports.command = 'push <script>'
 module.exports.describe = 'Push your bot directory to the mechmania servers to generate stats and replays against other teams'
@@ -18,7 +19,7 @@ module.exports.builder = (yargs: any) => yargs
     describe: 'Path to your bot\'s directory'
   })
 
-module.exports.handler = async (argv: {script: string}) => {
+module.exports.handler = handleErrors(async (argv: {script: string}) => {
   const script = path.resolve(argv.script)
 
   // TODO: Check if the server already has the script (SHA 256 hash)
@@ -34,4 +35,4 @@ module.exports.handler = async (argv: {script: string}) => {
   archive.finalize();
   const response = await pushPromise;
   console.log(response);
-}
+})

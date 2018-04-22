@@ -1,6 +1,8 @@
 // @flow
 const path = require('path')
 
+const handleErrors = require('../utils/handleErrors')
+
 module.exports.command = 'update [dir]'
 module.exports.describe = 'Update the game files'
 
@@ -16,7 +18,7 @@ module.exports.builder = (yargs: any) => yargs
     describe: 'Skip version match check'
   })
 
-module.exports.handler = (argv: {dir: string, force: boolean}) => {
+module.exports.handler = handleErrors((argv: {dir: string, force: boolean}) => {
   const dir = path.resolve(argv.dir)
   // TODO: Get local game files version (how?)
   // TODO: Check if server version matches the local game files version (skip if force)
@@ -24,4 +26,4 @@ module.exports.handler = (argv: {dir: string, force: boolean}) => {
   // TODO: extract files into dir
   // TODO: reinstall CLI tools from downloaded package
   console.log('Updated the mechmania project to the latest version at %s', dir)
-}
+});

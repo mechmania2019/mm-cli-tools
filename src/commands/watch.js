@@ -1,5 +1,7 @@
 // @flow
 
+const handleErrors = require('../utils/handleErrors')
+
 module.exports.command = 'watch <team> [team2]'
 module.exports.describe = 'Watch the latest match your bot played against another team'
 
@@ -14,7 +16,7 @@ module.exports.builder = (yargs: any) => yargs
     default: 'me'  //TODO: get self teamID
   })
 
-module.exports.handler = (argv: {team: string, team2: string}) => {
+module.exports.handler = handleErrors((argv: {team: string, team2: string}) => {
   const team1 = argv.team
   const team2 = argv.team2
   // TODO: Fetch logfile from server
@@ -23,4 +25,4 @@ module.exports.handler = (argv: {team: string, team2: string}) => {
   // TODO: Start visualizer on logfile
 
   console.log('%s vs. %s', team1, team2)
-}
+});

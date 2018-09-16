@@ -1,6 +1,7 @@
 // @flow
 
 const fetch = require('node-fetch')
+const through2 = require('through2');
 
 import type { Team } from './utils/auth'
 
@@ -26,10 +27,10 @@ const push = async (team: ?Team, script: ReadableStream): Promise<?Team> => {
   if(!team) {
     throw new Error('Not logged in');
   }
-  const myScript = await script;
-  const res = await fetch('http://localhost:3000/' + team.name + '/' + team.token, {
+
+  const res = await fetch('http://scripts.mechmania.io', {
     method: 'POST', 
-    body: script, 
+    body: script.pipe(through2()),
     headers: {
       'Authorization': `Bearer ${team.token}`
     }

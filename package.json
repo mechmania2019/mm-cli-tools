@@ -22,10 +22,11 @@
     ]
   },
   "dependencies": {
-    "archiver": "^2.1.1",
     "chalk": "^2.4.0",
     "fs": "^0.0.1-security",
     "node-fetch": "^2.0.0",
+    "tar": "4.4.6",
+    "through2": "2.0.3",
     "yargs": "^11.0.0"
   },
   "devDependencies": {

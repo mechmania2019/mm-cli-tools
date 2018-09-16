@@ -27,7 +27,7 @@ const push = async (team: ?Team, script: ReadableStream): Promise<?Team> => {
     throw new Error('Not logged in');
   }
   const myScript = await script;
-  const res = await fetch('http://localhost:3000/' + team.name, {
+  const res = await fetch('http://localhost:3000/' + team.name + '/' + team.token, {
     method: 'POST', 
     body: script, 
     headers: {

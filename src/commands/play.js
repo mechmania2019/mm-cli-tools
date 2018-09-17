@@ -1,6 +1,6 @@
 // @flow
 const path = require("path");
-const execa = require("execa");
+const run = require("../utils/run");
 
 const handleErrors = require("../utils/handleErrors");
 
@@ -26,12 +26,18 @@ module.exports.builder = (yargs: any) =>
     });
 
 module.exports.handler = handleErrors(
-  (argv: { script: string, noVisualizer: ?boolean, logfile: ?string }) => {
+  async (argv: {
+    script: string,
+    noVisualizer: ?boolean,
+    logfile: ?string
+  }) => {
     const script = path.resolve(argv.script);
-    console.log("Playing game with %s", script);
+    console.log("Updating game binary");
+    await run("docker", ["pull", "pranaygp/mm"]);
 
-    // Build an image with the script
-    const { stdout } = execa("docker", [
+    console.log("Building your bot at %s", script);
+    // TODO: Don't use docker (only support python/c perhaps?) if --no-docker
+    await run("docker", [
       "build",
       script,
       "-t",
@@ -39,23 +45,17 @@ module.exports.handler = handleErrors(
       "-t",
       "mechmania.io/bot/2"
     ]);
-    // TODO: build a second image if provided
-    // TODO: Start visualizer (unless --no-visualizer)
-    stdout.pipe(process.stdout);
-    stdout.on("close", async () => {
-      console.log("Built image");
-      console.log("Starting Game against your own bot");
-      const { stdout, stderr } = execa("docker", [
-        "run",
-        "-v",
-        "/var/run/docker.sock:/var/run/docker.sock",
-        "--rm",
-        "-i",
-        "pranaygp/mm"
-      ]);
-      // TODO: pipe stdout from game engine to visualzer (unless --no-visualizer) and logfile (if --logfile)
-      stderr.pipe(process.stderr);
-      stdout.pipe(process.stdout);
-    });
+
+    console.log("Running game against your own bot");
+    await run("docker", [
+      "run",
+      "-v",
+      "/var/run/docker.sock:/var/run/docker.sock",
+      "--rm",
+      "-i",
+      "pranaygp/mm"
+    ]);
+    // TODO: pipe stdout from game engine to a file (unless --no-visualizer) and logfile (if --logfile)
+    // TODO: Start visualizer (unless --no-visualizer) with logfile location as arg
   }
 );

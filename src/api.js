@@ -41,9 +41,20 @@ const push = async (team: ?Team, script: ReadableStream): Promise<?Team> => {
   return await res.json()
 }
 
+const log = async (team: ?Team): Promise<?Team> => {
+  const res = await fetch('https://logpull.mechmania.io', {
+    headers: {
+      'Authorization': `Bearer ${team.token}`
+    }
+  })
+  if(res.status === 401) return null
+  if(res.status !== 200) throw Error('An unknown error occurred on the server ' + res.status)
+  return res.text()
+}
 
 module.exports = {
   login,
   register, 
-  push
+  push, 
+  log
 }

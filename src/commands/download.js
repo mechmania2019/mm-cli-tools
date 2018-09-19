@@ -22,13 +22,6 @@ module.exports.describe =
 module.exports.builder = yargs => yargs;
 
 module.exports.handler = handleErrors(async argv => {
-  const team = await getTeam();
-
-  if (!team) {
-    return console.log(
-      "Nobody is currently logged in. Use `mm login` to login or `mm register` to create a new team."
-    );
-  }
   if (process.platform === "darwin") {
     console.log("Starting download for the visualizer for mac");
     try {

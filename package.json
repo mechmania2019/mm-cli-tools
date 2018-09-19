@@ -27,9 +27,12 @@
     "app-root-path": "2.1.0",
     "chalk": "2.4.0",
     "execa": "1.0.0",
+    "fetch": "^1.1.0",
     "get-stream": "4.0.0",
     "mkdirp": "0.5.1",
-    "node-fetch": "2.0.0",
+    "node-fetch": "^2.2.0",
+    "rimraf": "2.6.2",
+    "tar": "4.4.6",
     "through2": "2.0.3",
     "yargs": "11.0.0"
   },

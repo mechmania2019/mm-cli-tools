@@ -24,7 +24,7 @@ const { getLocalVersion } = require('./utils/version');
 The latest version is ${update.latest}. Run \`${chalk.green(`npm install -g mechmania`)}\` to update
 
 ======================================================================
-`))
+`));
   }
   await config.setup()
   const argv = yargs

@@ -8,6 +8,7 @@ const fs = require("fs");
 const tar = require("tar");
 const { promisify } = require("util");
 const rimraf = promisify(require("rimraf"));
+const { getVisualizer } = require("../utils/visualize");
 
 const handleErrors = require("../utils/handleErrors");
 
@@ -15,6 +16,7 @@ const visualizerDir = path.join(os.homedir(), ".mm", "visualizer");
 
 const stat = promisify(fs.stat);
 const mkdir = promisify(fs.mkdir);
+const chmod = promisify(fs.chmod);
 
 module.exports.command = "download";
 module.exports.describe =
@@ -30,24 +32,30 @@ module.exports.handler = handleErrors(async argv => {
     await mkdir(visualizerDir);
   } catch (e) {}
 
-  const extractor = tar.x({
-    strip: 1,
-    C: visualizerDir
-  });
+  const extractor = tar
+    .x({
+      strip: 1,
+      C: visualizerDir
+    })
+    .on("close", async () => {
+      if (process.platform === "darwin" || process.platform === "linux") {
+        await chmod(getVisualizer(), 0o755);
+      }
+      console.log("The game is downloaded");
+    });
 
   if (process.platform === "darwin") {
     console.log("Downloading the game");
-    await fetch("https://mm-mac.now.sh").then(res => res.body.pipe(extractor));
+    fetch("https://mm-mac.now.sh").then(res => res.body.pipe(extractor));
   }
 
   if (process.platform === "win32" || process.platform === "win64") {
     console.log("Downloading the game");
-    await fetch("https://mm-windows.now.sh").then(res => res.body.pipe(extractor));
+    fetch("https://mm-windows.now.sh").then(res => res.body.pipe(extractor));
   }
 
   if (process.platform === "linux") {
     console.log("Downloading the game");
-    await fetch("https://mm-linux.now.sh").then(res => res.body.pipe(extractor));
+    fetch("https://mm-linux.now.sh").then(res => res.body.pipe(extractor));
   }
-  console.log("The game is downloaded");
 });

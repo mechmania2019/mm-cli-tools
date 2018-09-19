@@ -11,9 +11,7 @@ const rimraf = promisify(require("rimraf"));
 
 const handleErrors = require("../utils/handleErrors");
 
-// const visualizerFName = "visualizer"
 const visualizerDir = path.join(os.homedir(), ".mm", "visualizer");
-// const visualizerPath = path.join(visualizerDir, "visualizer.tar.gz");
 
 const stat = promisify(fs.stat);
 const mkdir = promisify(fs.mkdir);
@@ -32,43 +30,23 @@ module.exports.handler = handleErrors(async argv => {
     await mkdir(visualizerDir);
   } catch (e) {}
 
+  const extractor = tar.x({
+    strip: 1,
+    C: visualizerDir
+  });
+
   if (process.platform === "darwin") {
     console.log("Downloading the game");
-    fetch("https://mm-mac.now.sh").then(res =>
-      res.body.pipe(
-        tar.x({
-          strip: 1,
-          C: visualizerDir
-        })
-      )
-    );
+    fetch("https://mm-mac.now.sh").then(res => res.body.pipe(extractor));
   }
 
-  if (process.platform === "win32" || process.platform === "win64" ) {
+  if (process.platform === "win32" || process.platform === "win64") {
     console.log("Downloading the game");
-    fetch("https://mm-window.now.sh").then(res =>
-      res.body.pipe(
-        tar.x({
-          strip: 1,
-          C: visualizerDir
-        })
-      )
-    );
+    fetch("https://mm-windows.now.sh").then(res => res.body.pipe(extractor));
   }
-
 
   if (process.platform === "linux") {
     console.log("Downloading the game");
-    fetch("https://mm-linux.now.sh").then(res =>
-      res.body.pipe(
-        tar.x({
-          strip: 1,
-          C: visualizerDir
-        })
-      )
-    );
+    fetch("https://mm-linux.now.sh").then(res => res.body.pipe(extractor));
   }
-
-
- 
 });

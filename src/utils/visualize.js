@@ -9,7 +9,7 @@ const GAME_NAME = "MM_MacOS_PlayerSettings";
 const getVisualizer = () => {
   switch (process.platform) {
     case "darwin":
-      returnpath.join(VISUALIZER_DIR, "Contents", "MacOS", GAME_NAME);
+      return path.join(VISUALIZER_DIR, "Contents", "MacOS", GAME_NAME);
       break;
     case "win32":
       return path.join(VISUALIZER_DIR, `${GAME_NAME}.exe`);

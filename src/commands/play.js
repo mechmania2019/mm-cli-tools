@@ -4,7 +4,10 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const mkdirp = promisify(require("mkdirp"));
+const chalk = require("chalk");
+const tar = require("tar");
 
+const { play } = require("../api");
 const run = require("../utils/run");
 const visualize = require("../utils/visualize");
 const handleErrors = require("../utils/handleErrors");
@@ -16,7 +19,7 @@ const writeFile = promisify(fs.writeFile);
 const access = promisify(fs.access);
 const stat = promisify(fs.stat);
 
-module.exports.command = ["$0 <script>", "play <script>"];
+module.exports.command = "play <script>";
 module.exports.describe =
   "Watch your bot play against the default AI bot. To see other possible commands, run `mm help`";
 
@@ -26,8 +29,13 @@ module.exports.builder = (yargs: any) =>
       type: "string",
       describe: "Path to your bot's script"
     })
-    .option("no-visualizer", {
+    .option("remote", {
       type: "boolean",
+      describe: "EXPERIMENTAL: Build and test your bot in the cloud!"
+    })
+    .option("visualizer", {
+      type: "boolean",
+      default: true,
       describe:
         "Just build and save the logfile without starting the visualizer"
     })
@@ -40,11 +48,12 @@ module.exports.builder = (yargs: any) =>
 module.exports.handler = handleErrors(
   async (argv: {
     script: string,
-    noVisualizer: ?boolean,
+    visualizer: ?boolean,
+    remote: ?boolean,
     logfile: ?string
   }) => {
     const script = path.resolve(argv.script);
-    if (!argv.noVisualizer) {
+    if (argv.visualizer) {
       const visualizer = visualize.getVisualizer();
       try {
         await access(visualizer, fs.constants.X_OK);
@@ -71,44 +80,58 @@ module.exports.handler = handleErrors(
       process.exit(1);
     }
 
-    console.log("Updating game binary");
-    const { code: updateCode } = await run("docker", ["pull", "pranaygp/mm"]);
-    if (updateCode && updateCode !== 0) {
-      console.error("Error updating the game binary");
-      process.exit(updateCode);
+    let stdout;
+    if (argv.remote) {
+      console.log(
+        chalk.yellow(
+          `NOTE: Cloud builds with --remote are an experimental feature`
+        )
+      );
+      console.log("This could take a while...")
+      stdout = await play(tar.c({ gzip: true, cwd: script }, ["."]));
+    } else {
+      console.log("Updating game binary");
+      const { code: updateCode } = await run("docker", ["pull", "pranaygp/mm"]);
+      if (updateCode && updateCode !== 0) {
+        console.error("Error updating the game binary");
+        process.exit(updateCode);
+      }
+
+      console.log("Building your bot at %s", script);
+      const { code: buildCode } = await run("docker", [
+        "build",
+        script,
+        "-t",
+        "mechmania.io/bot/1",
+        "-t",
+        "mechmania.io/bot/2"
+      ]);
+      if (buildCode && buildCode !== 0) {
+        console.error("Error building your bot");
+        process.exit(buildCode);
+      }
+      // TODO: build the second bot if provided
+
+      console.log("Running game against your own bot");
+      const proc = await run("docker", [
+        "run",
+        "-v",
+        "/var/run/docker.sock:/var/run/docker.sock",
+        "--rm",
+        "-i",
+        "pranaygp/mm"
+      ]);
+      const { code: runCode } = proc;
+      if (runCode && runCode !== 0) {
+        console.error("Error running the game");
+        process.exit(runCode);
+      }
+      stdout = proc.stdout;
     }
 
-    console.log("Building your bot at %s", script);
-    const { code: buildCode } = await run("docker", [
-      "build",
-      script,
-      "-t",
-      "mechmania.io/bot/1",
-      "-t",
-      "mechmania.io/bot/2"
-    ]);
-    if (buildCode && buildCode !== 0) {
-      console.error("Error building your bot");
-      process.exit(buildCode);
-    }
-    // TODO: build the second bot if provided
+    // TODO: pipe stdout to a logfile (if --logfile)
 
-    console.log("Running game against your own bot");
-    const { stdout, code: runCode } = await run("docker", [
-      "run",
-      "-v",
-      "/var/run/docker.sock:/var/run/docker.sock",
-      "--rm",
-      "-i",
-      "pranaygp/mm"
-    ]);
-    if (runCode && runCode !== 0) {
-      console.error("Error running the game");
-      process.exit(runCode);
-    }
-    // TODO: pipe stdout from game engine to a logfile (if --logfile)
-
-    if (!argv.noVisualizer) {
+    if (argv.visualizer) {
       console.log("Setting up visualizer");
       // Assert tmpdir
       await mkdirp(TMP_DIR);

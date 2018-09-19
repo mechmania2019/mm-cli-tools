@@ -1,8 +1,18 @@
 // @flow
+const { promisify } = require("util");
+const fs = require("fs");
+const os = require("os");
 const path = require("path");
-const run = require("../utils/run");
+const mkdirp = promisify(require("mkdirp"));
 
+const run = require("../utils/run");
+const visualize = require("../utils/visualize");
 const handleErrors = require("../utils/handleErrors");
+
+const TMP_DIR = path.join(os.tmpdir(), "mm");
+const LOG_PATH = path.join(TMP_DIR, "last.log.txt");
+
+const writeFile = promisify(fs.writeFile);
 
 module.exports.command = ["$0 <script>", "play <script>"];
 module.exports.describe =
@@ -33,11 +43,15 @@ module.exports.handler = handleErrors(
   }) => {
     const script = path.resolve(argv.script);
     console.log("Updating game binary");
-    await run("docker", ["pull", "pranaygp/mm"]);
+    const { code: updateCode } = await run("docker", ["pull", "pranaygp/mm"]);
+    if (updateCode && updateCode !== 0) {
+      console.error("Error updating the game binary");
+      process.exit(updateCode);
+    }
 
     console.log("Building your bot at %s", script);
     // TODO: Don't use docker (only support python/c perhaps?) if --no-docker
-    await run("docker", [
+    const { code: buildCode } = await run("docker", [
       "build",
       script,
       "-t",
@@ -45,9 +59,13 @@ module.exports.handler = handleErrors(
       "-t",
       "mechmania.io/bot/2"
     ]);
+    if (buildCode && buildCode !== 0) {
+      console.error("Error updating the game binary");
+      process.exit(buildCode);
+    }
 
     console.log("Running game against your own bot");
-    await run("docker", [
+    const { stdout, code: runCode } = await run("docker", [
       "run",
       "-v",
       "/var/run/docker.sock:/var/run/docker.sock",
@@ -55,7 +73,16 @@ module.exports.handler = handleErrors(
       "-i",
       "pranaygp/mm"
     ]);
+    if (runCode && runCode !== 0) {
+      console.error("Error updating the game binary");
+      process.exit(runCode);
+    }
+
+    console.log("Setting up visualizer");
+    // Assert tmpdir
+    await mkdirp(TMP_DIR);
+    await writeFile(LOG_PATH, stdout);
+    await visualize(LOG_PATH);
     // TODO: pipe stdout from game engine to a file (unless --no-visualizer) and logfile (if --logfile)
-    // TODO: Start visualizer (unless --no-visualizer) with logfile location as arg
   }
 );

@@ -49,4 +49,5 @@ module.exports.handler = handleErrors(async argv => {
     console.log("Downloading the game");
     fetch("https://mm-linux.now.sh").then(res => res.body.pipe(extractor));
   }
+  console.log("The game is downloaded");
 });

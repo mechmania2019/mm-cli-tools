@@ -14,6 +14,7 @@ const LOG_PATH = path.join(TMP_DIR, "last.log.txt");
 
 const writeFile = promisify(fs.writeFile);
 const access = promisify(fs.access);
+const stat = promisify(fs.stat);
 
 module.exports.command = ["$0 <script>", "play <script>"];
 module.exports.describe =
@@ -51,7 +52,23 @@ module.exports.handler = handleErrors(
         console.error(
           "Could not find visualizer. Run `mm download` beofre trying this again."
         );
+        process.exit(1);
       }
+    }
+
+    try {
+      const stats = await stat(script);
+      if (!stats.isDirectory()) {
+        console.error(
+          `${script} is not a directory. Make sure to run mm play on a directory, not a file.`
+        );
+        process.exit(1);
+      }
+    } catch (e) {
+      console.error(
+        `Error accesssing the directory ${script}. Are you sure it exists and you permissions to access it`
+      );
+      process.exit(1);
     }
 
     console.log("Updating game binary");
@@ -62,7 +79,6 @@ module.exports.handler = handleErrors(
     }
 
     console.log("Building your bot at %s", script);
-    // TODO: Don't use docker (only support python/c perhaps?) if --no-docker
     const { code: buildCode } = await run("docker", [
       "build",
       script,
@@ -91,7 +107,7 @@ module.exports.handler = handleErrors(
       process.exit(runCode);
     }
     // TODO: pipe stdout from game engine to a logfile (if --logfile)
-    
+
     if (!argv.noVisualizer) {
       console.log("Setting up visualizer");
       // Assert tmpdir

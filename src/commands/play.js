@@ -13,6 +13,7 @@ const TMP_DIR = path.join(os.tmpdir(), "mm");
 const LOG_PATH = path.join(TMP_DIR, "last.log.txt");
 
 const writeFile = promisify(fs.writeFile);
+const access = promisify(fs.access);
 
 module.exports.command = ["$0 <script>", "play <script>"];
 module.exports.describe =
@@ -42,6 +43,17 @@ module.exports.handler = handleErrors(
     logfile: ?string
   }) => {
     const script = path.resolve(argv.script);
+    if (!argv.noVisualizer) {
+      const visualizer = visualize.getVisualizer();
+      try {
+        await access(visualizer, fs.constants.X_OK);
+      } catch (e) {
+        console.error(
+          "Could not find visualizer. Run `mm download` beofre trying this again."
+        );
+      }
+    }
+
     console.log("Updating game binary");
     const { code: updateCode } = await run("docker", ["pull", "pranaygp/mm"]);
     if (updateCode && updateCode !== 0) {
@@ -60,9 +72,10 @@ module.exports.handler = handleErrors(
       "mechmania.io/bot/2"
     ]);
     if (buildCode && buildCode !== 0) {
-      console.error("Error updating the game binary");
+      console.error("Error building your bot");
       process.exit(buildCode);
     }
+    // TODO: build the second bot if provided
 
     console.log("Running game against your own bot");
     const { stdout, code: runCode } = await run("docker", [
@@ -74,15 +87,17 @@ module.exports.handler = handleErrors(
       "pranaygp/mm"
     ]);
     if (runCode && runCode !== 0) {
-      console.error("Error updating the game binary");
+      console.error("Error running the game");
       process.exit(runCode);
     }
-
-    console.log("Setting up visualizer");
-    // Assert tmpdir
-    await mkdirp(TMP_DIR);
-    await writeFile(LOG_PATH, stdout);
-    await visualize(LOG_PATH);
-    // TODO: pipe stdout from game engine to a file (unless --no-visualizer) and logfile (if --logfile)
+    // TODO: pipe stdout from game engine to a logfile (if --logfile)
+    
+    if (!argv.noVisualizer) {
+      console.log("Setting up visualizer");
+      // Assert tmpdir
+      await mkdirp(TMP_DIR);
+      await writeFile(LOG_PATH, stdout);
+      await visualize(LOG_PATH);
+    }
   }
 );

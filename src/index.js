@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 //@flow
 const yargs = require('yargs');
-const pkg = require('../package');
+const chalk = require('chalk')
 const checkForUpdate = require('update-check');
+const pkg = require('../package');
 
 const config = require('./utils/config');
 const { getLocalVersion } = require('./utils/version');
@@ -17,7 +18,13 @@ const { getLocalVersion } = require('./utils/version');
   }
 
   if (update) {
-    console.log(`The latest version is ${update.latest}. Please update!`);
+    console.log(chalk.red(`
+======================================================================
+
+The latest version is ${update.latest}. Run \`${chalk.green(`npm install -g mechmania`)}\` to update
+
+======================================================================
+`))
   }
   await config.setup()
   const argv = yargs

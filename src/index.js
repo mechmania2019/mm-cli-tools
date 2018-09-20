@@ -32,5 +32,6 @@ The latest version is ${update.latest}. Run \`${chalk.green(`npm install -g mech
     .alias('h', 'help')
     .alias('v', 'version')
     .version(getLocalVersion())
+    .usage('Usage: mm <command> [options]')
     .argv;
 })()

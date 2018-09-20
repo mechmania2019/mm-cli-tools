@@ -6,6 +6,7 @@ const path = require("path");
 const mkdirp = promisify(require("mkdirp"));
 const chalk = require("chalk");
 const tar = require("tar");
+const execa = require("execa");
 
 const { play } = require("../api");
 const run = require("../utils/run");
@@ -42,7 +43,7 @@ const build = async (s1, s2) => {
           "build",
           s,
           "-t",
-          `mechmania.io/bot/${i}`
+          `mechmania.io/bot/${i + 1}`
         ]);
         if (code && code !== 0) {
           console.error("Error building your bot");
@@ -84,7 +85,8 @@ module.exports.builder = (yargs: any) =>
     })
     .option("timeout", {
       type: "number",
-      describe: "On slower PCs, increase this number. Your bot will be given x seconds to start up",
+      describe:
+        "On slower PCs, increase this number. Your bot will be given x seconds to start up",
       default: 3
     });
 
@@ -154,7 +156,7 @@ module.exports.handler = handleErrors(
       await build(script1, script2);
 
       console.log("Running the game");
-      const proc = await run("docker", [
+      const proc = execa("docker", [
         "run",
         "-v",
         "/var/run/docker.sock:/var/run/docker.sock",
@@ -164,12 +166,8 @@ module.exports.handler = handleErrors(
         `TIMEOUT=${argv.timeout}`,
         "pranaygp/mm"
       ]);
-      const { code: runCode } = proc;
-      if (runCode && runCode !== 0) {
-        console.error("Error running the game");
-        process.exit(runCode);
-      }
-      stdout = proc.stdout;
+      proc.stderr && proc.stderr.pipe(process.stderr);
+      stdout = (await proc).stdout;
     }
 
     // TODO: pipe stdout to a logfile (if --logfile)

@@ -55,7 +55,7 @@ const build = async (s1, s2) => {
 
 module.exports.command = "play <script> [script2]";
 module.exports.describe =
-  "Watch your bot play against the default AI bot. To see other possible commands, run `mm help`";
+  "Watch your bot play against itself (or another bot). To see other possible commands, run `mm help`";
 
 module.exports.builder = (yargs: any) =>
   yargs
@@ -75,12 +75,12 @@ module.exports.builder = (yargs: any) =>
       type: "boolean",
       default: true,
       describe:
-        "Just build and save the logfile without starting the visualizer"
+        "Start the visualizer after the game engine is done processing the game"
     })
     .option("logfile", {
       type: "string",
       describe:
-        "Provide a path to a logfile to write the results of the game engine into (the file can be used as the input to the visualizer"
+        "Provide a path to a logfile to write the results of the game engine into (the file can be used as the input to the visualizer)"
     });
 
 module.exports.handler = handleErrors(

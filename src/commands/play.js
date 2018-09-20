@@ -19,7 +19,41 @@ const writeFile = promisify(fs.writeFile);
 const access = promisify(fs.access);
 const stat = promisify(fs.stat);
 
-module.exports.command = "play <script>";
+const build = async (s1, s2) => {
+  if (!s2) {
+    console.log("Building your bot at %s", s1);
+    const { code } = await run("docker", [
+      "build",
+      s1,
+      "-t",
+      "mechmania.io/bot/1",
+      "-t",
+      "mechmania.io/bot/2"
+    ]);
+    if (code && code !== 0) {
+      console.error("Error building your bot");
+      process.exit(code);
+    }
+  } else {
+    await Promise.all(
+      [s1, s2].map(async (s, i) => {
+        console.log("Building your bot at %s", s);
+        const { code } = await run("docker", [
+          "build",
+          s,
+          "-t",
+          `mechmania.io/bot/${i}`
+        ]);
+        if (code && code !== 0) {
+          console.error("Error building your bot");
+          process.exit(code);
+        }
+      })
+    );
+  }
+};
+
+module.exports.command = "play <script> [script2]";
 module.exports.describe =
   "Watch your bot play against the default AI bot. To see other possible commands, run `mm help`";
 
@@ -28,6 +62,10 @@ module.exports.builder = (yargs: any) =>
     .positional("script", {
       type: "string",
       describe: "Path to your bot's script"
+    })
+    .positional("script2", {
+      type: "string",
+      describe: "Second bot to play against"
     })
     .option("remote", {
       type: "boolean",
@@ -48,11 +86,13 @@ module.exports.builder = (yargs: any) =>
 module.exports.handler = handleErrors(
   async (argv: {
     script: string,
+    script2: ?string,
     visualizer: ?boolean,
     remote: ?boolean,
     logfile: ?string
   }) => {
-    const script = path.resolve(argv.script);
+    const script1 = path.resolve(argv.script);
+    const script2 = argv.script2 && path.resolve(argv.script2);
     if (argv.visualizer) {
       const visualizer = visualize.getVisualizer();
       try {
@@ -66,16 +106,16 @@ module.exports.handler = handleErrors(
     }
 
     try {
-      const stats = await stat(script);
+      const stats = await stat(script1);
       if (!stats.isDirectory()) {
         console.error(
-          `${script} is not a directory. Make sure to run mm play on a directory, not a file.`
+          `${script1} is not a directory. Make sure to run mm play on a directory, not a file.`
         );
         process.exit(1);
       }
     } catch (e) {
       console.error(
-        `Error accesssing the directory ${script}. Are you sure it exists and you permissions to access it`
+        `Error accesssing the directory ${script1}. Are you sure it exists and you permissions to access it`
       );
       process.exit(1);
     }
@@ -87,8 +127,15 @@ module.exports.handler = handleErrors(
           `NOTE: Cloud builds with --remote are an experimental feature`
         )
       );
-      console.log("This could take a while...")
-      stdout = await play(tar.c({ gzip: true, cwd: script }, ["."]));
+      if (script2) {
+        console.log(
+          chalk.red(
+            `ERROR: Cloud builds don't support passing in 2 bots. You may only test a bot against itself.`
+          )
+        );
+      }
+      console.log("This could take a while...");
+      stdout = await play(tar.c({ gzip: true, cwd: script1 }, ["."]));
     } else {
       console.log("Updating game binary");
       const { code: updateCode } = await run("docker", ["pull", "pranaygp/mm"]);
@@ -97,20 +144,8 @@ module.exports.handler = handleErrors(
         process.exit(updateCode);
       }
 
-      console.log("Building your bot at %s", script);
-      const { code: buildCode } = await run("docker", [
-        "build",
-        script,
-        "-t",
-        "mechmania.io/bot/1",
-        "-t",
-        "mechmania.io/bot/2"
-      ]);
-      if (buildCode && buildCode !== 0) {
-        console.error("Error building your bot");
-        process.exit(buildCode);
-      }
-      // TODO: build the second bot if provided
+      console.log("Building your bot(s)");
+      await build(script1, script2);
 
       console.log("Running game against your own bot");
       const proc = await run("docker", [

@@ -141,6 +141,7 @@ module.exports.handler = handleErrors(
             `ERROR: Cloud builds don't support passing in 2 bots. You may only test a bot against itself.`
           )
         );
+        process.exit(1);
       }
       console.log("This could take a while...");
       stdout = await play(tar.c({ gzip: true, cwd: script1 }, ["."]));

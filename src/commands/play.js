@@ -153,7 +153,7 @@ module.exports.handler = handleErrors(
       console.log("Building your bot(s)");
       await build(script1, script2);
 
-      console.log("Running game against your own bot");
+      console.log("Running the game");
       const proc = await run("docker", [
         "run",
         "-v",

@@ -81,6 +81,11 @@ module.exports.builder = (yargs: any) =>
       type: "string",
       describe:
         "Provide a path to a logfile to write the results of the game engine into (the file can be used as the input to the visualizer)"
+    })
+    .option("timeout", {
+      type: "number",
+      describe: "On slower PCs, increase this number. Your bot will be given x seconds to start up",
+      default: 3
     });
 
 module.exports.handler = handleErrors(
@@ -89,7 +94,8 @@ module.exports.handler = handleErrors(
     script2: ?string,
     visualizer: ?boolean,
     remote: ?boolean,
-    logfile: ?string
+    logfile: ?string,
+    timeout: number
   }) => {
     const script1 = path.resolve(argv.script);
     const script2 = argv.script2 && path.resolve(argv.script2);
@@ -154,6 +160,8 @@ module.exports.handler = handleErrors(
         "/var/run/docker.sock:/var/run/docker.sock",
         "--rm",
         "-i",
+        "-e",
+        `TIMEOUT=${argv.timeout}`,
         "pranaygp/mm"
       ]);
       const { code: runCode } = proc;

@@ -156,7 +156,7 @@ module.exports.handler = handleErrors(
       console.log("Building your bot(s)");
       await build(script1, script2);
 
-      console.log("Running the game");
+      console.log("Running the game engine (only logs using the `log` function will be visible during this)");
       const proc = execa("docker", [
         "run",
         "-v",

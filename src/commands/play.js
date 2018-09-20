@@ -9,6 +9,7 @@ const tar = require("tar");
 const execa = require("execa");
 
 const { play } = require("../api");
+const { getTeam } = require("../utils/auth");
 const run = require("../utils/run");
 const visualize = require("../utils/visualize");
 const handleErrors = require("../utils/handleErrors");
@@ -173,12 +174,13 @@ module.exports.handler = handleErrors(
 
     // TODO: pipe stdout to a logfile (if --logfile)
 
+    const team = await getTeam();
     if (argv.visualizer) {
       console.log("Setting up visualizer");
       // Assert tmpdir
       await mkdirp(TMP_DIR);
       await writeFile(LOG_PATH, stdout);
-      await visualize(LOG_PATH);
+      await visualize(LOG_PATH, `${team.name} 1`, `${team.name} 2`);
     }
   }
 );

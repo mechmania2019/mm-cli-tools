@@ -26,5 +26,5 @@ const getVisualizer = () => {
   }
 };
 
-module.exports = logFile => run(getVisualizer(), [logFile]);
+module.exports = (logFile, p1, p2) => run(getVisualizer(), [logFile, p1 || "Player 1", p2 || "Player 2"]);
 module.exports.getVisualizer = getVisualizer;

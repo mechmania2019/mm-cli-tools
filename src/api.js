@@ -138,8 +138,8 @@ const teams = async (team: ?Team): Promise<?Array<Team>> => {
   return res.json();
 };
 
-const matches = async (team: ?Team): Promise<?Team> => {
-  const res = await fetch("https://matches.mechmania.io", {
+const matches = async (team: ?Team, script: string): Promise<?any> => {
+  const res = await fetch(`https://matches.mechmania.io/matches/${script}`, {
     headers: {
       Authorization: `Bearer ${team.token}`
     }
@@ -148,6 +148,17 @@ const matches = async (team: ?Team): Promise<?Team> => {
   if (res.status !== 200)
     throw Error(`ERROR(${res.status}): ${await res.text()}`);
   return res.json();
+};
+
+const match = async (team: ?Team, match: string): Promise<?any> => {
+  const res = await fetch(`https://matches.mechmania.io/${match}`, {
+    headers: {
+      Authorization: `Bearer ${team.token}`
+    }
+  });
+  if (res.status !== 200)
+    throw Error(`ERROR(${res.status}): ${await res.text()}`);
+  return res;
 };
 
 module.exports = {
@@ -159,5 +170,6 @@ module.exports = {
   stats,
   versions,
   teams,
-  matches
+  matches,
+  match
 };

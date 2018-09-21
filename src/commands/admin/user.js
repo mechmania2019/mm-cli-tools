@@ -29,7 +29,7 @@ module.exports.handler = handleErrors(async argv => {
       "Nobody is currently logged in. Use `mm login` to login or `mm register` to create a new team."
     );
   }
-  const users = await teams();
+  const users = await teams(team);
 
   console.log(users);
   const choices = users.map(user => ({

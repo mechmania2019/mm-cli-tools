@@ -124,8 +124,13 @@ const play = async (script: ReadableStream): Promise<any> => {
   return res.text();
 };
 
-const teams = async (): Promise<?Array<Team>> => {
-  const res = await fetch("http://teams.mechmania.io");
+const teams = async (team: ?Team): Promise<?Array<Team>> => {
+  const res = await fetch("http://teams.mechmania.io", {
+    headers: {
+      Authorization: `Bearer ${team.token}`
+    }
+  });
+  if (res.status === 401) return null;
   if (res.status !== 200) {
     console.error(`ERROR(${res.status}): ${await res.text()}`);
     process.exit(1);

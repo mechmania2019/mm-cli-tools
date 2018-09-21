@@ -1,13 +1,12 @@
 #!/usr/bin/env node
 //@flow
-const yargs = require('yargs');
-const chalk = require('chalk')
-const checkForUpdate = require('update-check');
-const pkg = require('../package');
+const yargs = require("yargs");
+const chalk = require("chalk");
+const checkForUpdate = require("update-check");
+const pkg = require("../package");
 
-const config = require('./utils/config');
-const { getLocalVersion } = require('./utils/version');
-
+const config = require("./utils/config");
+const { getLocalVersion } = require("./utils/version");
 
 (async () => {
   let update = null;
@@ -19,21 +18,24 @@ const { getLocalVersion } = require('./utils/version');
   }
 
   if (update) {
-    console.log(chalk.red(`
+    console.log(
+      chalk.red(`
 ======================================================================
 
-The latest version is ${update.latest}. Run \`${chalk.green(`npm install -g mechmania`)}\` to update
+The latest version is ${update.latest}. Run \`${chalk.green(
+        `npm install -g mechmania`
+      )}\` to update
 
 ======================================================================
-`));
+`)
+    );
   }
-  await config.setup()
+  await config.setup();
   const argv = yargs
-    .commandDir('./commands')
-    .alias('h', 'help')
-    .alias('v', 'version')
+    .commandDir("./commands")
+    .alias("h", "help")
+    .alias("v", "version")
     .version(getLocalVersion())
-    .scriptName('mm')
-    .demandCommand()
-    .argv;
-})()
+    .scriptName("mm")
+    .demandCommand().argv;
+})();

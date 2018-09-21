@@ -124,11 +124,12 @@ const play = async (script: ReadableStream): Promise<any> => {
   return res.text();
 };
 
-
-const teams = async (): Promise<?Team> => {
+const teams = async (): Promise<?Array<Team>> => {
   const res = await fetch("http://teams.mechmania.io");
-  if (res.status !== 200)
-    throw Error(`ERROR(${res.status}): ${await res.text()}`);
+  if (res.status !== 200) {
+    console.error(`ERROR(${res.status}): ${await res.text()}`);
+    process.exit(1);
+  }
   return res.json();
 };
 
@@ -152,6 +153,6 @@ module.exports = {
   play,
   stats,
   versions,
-  teams, 
+  teams,
   matches
 };

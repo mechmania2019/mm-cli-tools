@@ -7,7 +7,7 @@ const handleErrors = require('../utils/handleErrors')
 
 const { stats, teams } = require("../api");
 
-module.exports.command = 'rankings'
+module.exports.command = 'leaderboard'
 module.exports.describe = 'Gets the rankings by displaying all the teams and the win and loss rate for every team'
 
 module.exports.builder = (yargs     ) => yargs

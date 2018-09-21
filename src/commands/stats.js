@@ -35,6 +35,8 @@ module.exports.handler = handleErrors(async () => {
   ]);
 
   console.log(`Fetching stats for version: ${script}`);
+  console.log(team)
+  console.log(script)
   const { wins, losses, ties } = await stats(team, script);
   console.log(`
 Wins: ${wins}

@@ -5,6 +5,8 @@ const through2 = require("through2");
 
 import type { Team } from "./utils/auth";
 
+const isLoggedIn = team => team && team.token;
+
 const login = async (token: string): Promise<?Team> => {
   const res = await fetch("https://login.mechmania.io", {
     headers: {
@@ -29,10 +31,10 @@ const register = async (name: string, email: string): Promise<?Team> => {
 };
 
 const push = async (team: ?Team, script: ReadableStream): Promise<?Team> => {
-  if (!team) {
-    throw new Error("Not logged in");
+  if (!isLoggedIn(team)) {
+    console.log("Not logged in. Run `mm login` or `mm register` first.");
+    process.exit(1);
   }
-
   const res = await fetch("http://scripts.mechmania.io", {
     method: "POST",
     body: script.pipe(through2()),
@@ -48,6 +50,10 @@ const push = async (team: ?Team, script: ReadableStream): Promise<?Team> => {
 };
 
 const log = async (team: ?Team): Promise<?Team> => {
+  if (!isLoggedIn(team)) {
+    console.log("Not logged in. Run `mm login` or `mm register` first.");
+    process.exit(1);
+  }
   const res = await fetch("https://logpull.mechmania.io", {
     headers: {
       Authorization: `Bearer ${team.token}`
@@ -59,7 +65,14 @@ const log = async (team: ?Team): Promise<?Team> => {
   return res.text();
 };
 
-const stats = async (team: ?Team, version: string): Promise<{wins: number, losses: number, ties: number}> => {
+const stats = async (
+  team: ?Team,
+  version: string
+): Promise<{ wins: number, losses: number, ties: number }> => {
+  if (!isLoggedIn(team)) {
+    console.log("Not logged in. Run `mm login` or `mm register` first.");
+    process.exit(1);
+  }
   const res = await fetch(`https://stats.mechmania.io/${version}`, {
     headers: {
       Authorization: `Bearer ${team.token}`
@@ -72,6 +85,10 @@ const stats = async (team: ?Team, version: string): Promise<{wins: number, losse
 };
 
 const versions = async (team: ?Team): Promise<?Team> => {
+  if (!isLoggedIn(team)) {
+    console.log("Not logged in. Run `mm login` or `mm register` first.");
+    process.exit(1);
+  }
   const res = await fetch("https://versions.mechmania.io", {
     headers: {
       Authorization: `Bearer ${team.token}`
@@ -83,7 +100,7 @@ const versions = async (team: ?Team): Promise<?Team> => {
   return res.json();
 };
 
-const play = async (script: ReadableStream): Promise<?Team> => {
+const play = async (script: ReadableStream): Promise<any> => {
   const res = await fetch("http://play.mechmania.io", {
     method: "POST",
     body: script.pipe(through2())
@@ -94,7 +111,7 @@ const play = async (script: ReadableStream): Promise<?Team> => {
   return res.json();
 };
 
-const teams = async (): Promise<?Team> => {
+const teams = async (): Promise<?Array<Team>> => {
   const res = await fetch("http://teams.mechmania.io");
   if (res.status !== 200)
     throw Error(`ERROR(${res.status}): ${await res.text()}`);

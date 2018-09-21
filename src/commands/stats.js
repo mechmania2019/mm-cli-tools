@@ -13,13 +13,7 @@ module.exports.describe = "Get stats for your bots";
 module.exports.builder = (yargs: any) => yargs;
 
 module.exports.handler = handleErrors(async () => {
-  let team;
-  try {
-    team = await getTeam();
-  } catch (e) {
-    console.log("Not logged in");
-    process.exit(0);
-  }
+  let team = await getTeam();
 
   const choices = (await versions(team)).map(({ key, createdAt }) => ({
     name: moment(createdAt).from(),
@@ -35,8 +29,8 @@ module.exports.handler = handleErrors(async () => {
   ]);
 
   console.log(`Fetching stats for version: ${script}`);
-  console.log(team)
-  console.log(script)
+  console.log(team);
+  console.log(script);
   const { wins, losses, ties } = await stats(team, script);
   console.log(`
 Wins: ${wins}

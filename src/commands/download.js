@@ -46,16 +46,16 @@ module.exports.handler = handleErrors(async argv => {
 
   if (process.platform === "darwin") {
     console.log("Downloading the game");
-    fetch("https://mm-mac.now.sh").then(res => res.body.pipe(extractor));
+    fetch("https://mm-mac2.now.sh").then(res => res.body.pipe(extractor));
   }
 
   if (process.platform === "win32" || process.platform === "win64") {
     console.log("Downloading the game");
-    fetch("https://mm-windows.now.sh").then(res => res.body.pipe(extractor));
+    fetch("https://mm-windows2.now.sh").then(res => res.body.pipe(extractor));
   }
 
   if (process.platform === "linux") {
     console.log("Downloading the game");
-    fetch("https://mm-linux.now.sh").then(res => res.body.pipe(extractor));
+    fetch("https://mm-linux2.now.sh").then(res => res.body.pipe(extractor));
   }
 });

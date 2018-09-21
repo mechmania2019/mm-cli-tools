@@ -14,8 +14,10 @@ const login = async (token: string): Promise<?Team> => {
     }
   });
   if (res.status === 401) return null;
-  if (res.status !== 200)
-    throw Error(`ERROR(${res.status}): ${await res.text()}`);
+  if (res.status !== 200) {
+    console.error(`ERROR(${res.status}): ${await res.text()}`);
+    process.exit(1);
+  }
   return await res.json();
 };
 
@@ -24,15 +26,16 @@ const register = async (name: string, email: string): Promise<?Team> => {
     body: JSON.stringify({ name, email }),
     method: "POST"
   });
-  if (res.status === 401) return null;
-  if (res.status !== 200)
-    throw Error(`ERROR(${res.status}): ${await res.text()}`);
+  if (res.status !== 200) {
+    console.error(`ERROR(${res.status}): ${await res.text()}`);
+    process.exit(1);
+  }
   return await res.json();
 };
 
 const push = async (team: ?Team, script: ReadableStream): Promise<?Team> => {
   if (!isLoggedIn(team)) {
-    console.log("Not logged in. Run `mm login` or `mm register` first.");
+    console.error("Not logged in. Run `mm login` or `mm register` first.");
     process.exit(1);
   }
   const res = await fetch("http://scripts.mechmania.io", {
@@ -44,14 +47,16 @@ const push = async (team: ?Team, script: ReadableStream): Promise<?Team> => {
   });
 
   if (res.status === 401) return null;
-  if (res.status !== 200)
-    throw Error(`ERROR(${res.status}): ${await res.text()}`);
+  if (res.status !== 200) {
+    console.error(`ERROR(${res.status}): ${await res.text()}`);
+    process.exit(1);
+  }
   return await res.json();
 };
 
 const log = async (team: ?Team): Promise<?Team> => {
   if (!isLoggedIn(team)) {
-    console.log("Not logged in. Run `mm login` or `mm register` first.");
+    console.error("Not logged in. Run `mm login` or `mm register` first.");
     process.exit(1);
   }
   const res = await fetch("https://logpull.mechmania.io", {
@@ -60,8 +65,10 @@ const log = async (team: ?Team): Promise<?Team> => {
     }
   });
   if (res.status === 401) return null;
-  if (res.status !== 200)
-    throw Error(`ERROR(${res.status}): ${await res.text()}`);
+  if (res.status !== 200) {
+    console.error(`ERROR(${res.status}): ${await res.text()}`);
+    process.exit(1);
+  }
   return res.text();
 };
 
@@ -70,7 +77,7 @@ const stats = async (
   version: string
 ): Promise<{ wins: number, losses: number, ties: number }> => {
   if (!isLoggedIn(team)) {
-    console.log("Not logged in. Run `mm login` or `mm register` first.");
+    console.error("Not logged in. Run `mm login` or `mm register` first.");
     process.exit(1);
   }
   const res = await fetch(`https://stats.mechmania.io/${version}`, {
@@ -79,14 +86,16 @@ const stats = async (
     }
   });
   if (res.status === 401) return null;
-  if (res.status !== 200)
-    throw Error(`ERROR(${res.status}): ${await res.text()}`);
+  if (res.status !== 200) {
+    console.error(`ERROR(${res.status}): ${await res.text()}`);
+    process.exit(1);
+  }
   return res.json();
 };
 
 const versions = async (team: ?Team): Promise<?Team> => {
   if (!isLoggedIn(team)) {
-    console.log("Not logged in. Run `mm login` or `mm register` first.");
+    console.error("Not logged in. Run `mm login` or `mm register` first.");
     process.exit(1);
   }
   const res = await fetch("https://versions.mechmania.io", {
@@ -95,8 +104,10 @@ const versions = async (team: ?Team): Promise<?Team> => {
     }
   });
   if (res.status === 401) return null;
-  if (res.status !== 200)
-    throw Error(`ERROR(${res.status}): ${await res.text()}`);
+  if (res.status !== 200) {
+    console.error(`ERROR(${res.status}): ${await res.text()}`);
+    process.exit(1);
+  }
   return res.json();
 };
 
@@ -106,15 +117,19 @@ const play = async (script: ReadableStream): Promise<any> => {
     body: script.pipe(through2())
   });
   if (res.status === 401) return null;
-  if (res.status !== 200)
-    throw Error(`ERROR(${res.status}): ${await res.text()}`);
-  return res.json();
+  if (res.status !== 200) {
+    console.error(`ERROR(${res.status}): ${await res.text()}`);
+    process.exit(1);
+  }
+  return res.text();
 };
 
 const teams = async (): Promise<?Array<Team>> => {
   const res = await fetch("http://teams.mechmania.io");
-  if (res.status !== 200)
-    throw Error(`ERROR(${res.status}): ${await res.text()}`);
+  if (res.status !== 200) {
+    console.error(`ERROR(${res.status}): ${await res.text()}`);
+    process.exit(1);
+  }
   return res.json();
 };
 

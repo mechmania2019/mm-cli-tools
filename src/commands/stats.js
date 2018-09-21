@@ -4,6 +4,7 @@ const { stats, versions } = require("../api");
 const { getTeam } = require("../utils/auth");
 const inquirer = require("inquirer");
 const moment = require("moment");
+const chalk = require("chalk");
 
 const handleErrors = require("../utils/handleErrors");
 
@@ -19,6 +20,15 @@ module.exports.handler = handleErrors(async () => {
     name: moment(createdAt).from(),
     value: key
   }));
+
+  if (!choices.length) {
+    console.log(
+      chalk.blue(
+        "Looks like you haven't pushed any scripts yet! Use `mm push` on your bot's directory first so we can show you stats on how well it fares."
+      )
+    );
+    process.exit(0);
+  }
 
   const { script } = await inquirer.prompt([
     {

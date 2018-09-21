@@ -13,7 +13,7 @@ const login = async (token: string): Promise<?Team> => {
   });
   if (res.status === 401) return null;
   if (res.status !== 200)
-    throw Error("An unknown error occurred on the server " + res.status);
+    throw Error(`ERROR(${res.status}): ${await res.text()}`);
   return await res.json();
 };
 
@@ -24,7 +24,7 @@ const register = async (name: string, email: string): Promise<?Team> => {
   });
   if (res.status === 401) return null;
   if (res.status !== 200)
-    throw Error("An unknown error occurred on the server " + res.status);
+    throw Error(`ERROR(${res.status}): ${await res.text()}`);
   return await res.json();
 };
 
@@ -43,7 +43,7 @@ const push = async (team: ?Team, script: ReadableStream): Promise<?Team> => {
 
   if (res.status === 401) return null;
   if (res.status !== 200)
-    throw Error("An unknown error occurred on the server " + res.status);
+    throw Error(`ERROR(${res.status}): ${await res.text()}`);
   return await res.json();
 };
 
@@ -55,8 +55,32 @@ const log = async (team: ?Team): Promise<?Team> => {
   });
   if (res.status === 401) return null;
   if (res.status !== 200)
-    throw Error("An unknown error occurred on the server " + res.status);
+    throw Error(`ERROR(${res.status}): ${await res.text()}`);
   return res.text();
+};
+
+const stats = async (team: ?Team, version: string): Promise<{wins: number, losses: number, ties: number}> => {
+  const res = await fetch(`https://stats.mechmania.io/${version}`, {
+    headers: {
+      Authorization: `Bearer ${team.token}`
+    }
+  });
+  if (res.status === 401) return null;
+  if (res.status !== 200)
+    throw Error(`ERROR(${res.status}): ${await res.text()}`);
+  return res.json();
+};
+
+const versions = async (team: ?Team): Promise<?Team> => {
+  const res = await fetch("https://versions.mechmania.io", {
+    headers: {
+      Authorization: `Bearer ${team.token}`
+    }
+  });
+  if (res.status === 401) return null;
+  if (res.status !== 200)
+    throw Error(`ERROR(${res.status}): ${await res.text()}`);
+  return res.json();
 };
 
 const play = async (script: ReadableStream): Promise<?Team> => {
@@ -66,8 +90,15 @@ const play = async (script: ReadableStream): Promise<?Team> => {
   });
   if (res.status === 401) return null;
   if (res.status !== 200)
-    throw Error("An unknown error occurred on the server " + res.status);
-  return res.text();
+    throw Error(`ERROR(${res.status}): ${await res.text()}`);
+  return res.json();
+};
+
+const teams = async (): Promise<?Team> => {
+  const res = await fetch("http://teams.mechmania.io");
+  if (res.status !== 200)
+    throw Error(`ERROR(${res.status}): ${await res.text()}`);
+  return res.json();
 };
 
 module.exports = {
@@ -75,5 +106,8 @@ module.exports = {
   register,
   push,
   log,
-  play
+  play,
+  stats,
+  versions,
+  teams
 };

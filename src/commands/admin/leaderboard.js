@@ -2,14 +2,13 @@
 const path = require("path");
 const chalk = require("chalk");
 const fetch = require("node-fetch");
-const { getTeam } = require("../utils/auth");
-const handleErrors = require("../utils/handleErrors");
+const { getTeam } = require("../../utils/auth");
+const handleErrors = require("../../utils/handleErrors");
 
-const { stats, teams } = require("../api");
+const { stats, teams } = require("../../api");
 
 module.exports.command = "leaderboard";
-module.exports.describe =
-  "Gets the rankings by displaying all the teams and the win and loss rate for every team";
+module.exports.describe = false;
 
 module.exports.builder = yargs => yargs;
 
@@ -42,9 +41,9 @@ module.exports.handler = handleErrors(async argv => {
   );
 
 
-  usersWithStats.sort(sortUsers).map(user => {
+  usersWithStats.sort(sortUsers).map((user, i) => {
     console.log(`
-    Team: ${user.team.padEnd(20).substring(0, 20)} Score: ${
+     ${i}. Team: ${user.team.padEnd(20).substring(0, 20)} Score: ${
       user.stats.score
     } Wins: ${user.stats.wins} Losses: ${user.stats.losses} Ties: ${
       user.stats.ties

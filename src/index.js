@@ -8,6 +8,7 @@ const pkg = require('../package');
 const config = require('./utils/config');
 const { getLocalVersion } = require('./utils/version');
 
+
 (async () => {
   let update = null;
 
@@ -33,5 +34,6 @@ The latest version is ${update.latest}. Run \`${chalk.green(`npm install -g mech
     .alias('v', 'version')
     .version(getLocalVersion())
     .scriptName('mm')
+    .demandCommand()
     .argv;
 })()

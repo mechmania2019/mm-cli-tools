@@ -124,12 +124,23 @@ const play = async (script: ReadableStream): Promise<any> => {
   return res.text();
 };
 
-const teams = async (): Promise<?Array<Team>> => {
+
+const teams = async (): Promise<?Team> => {
   const res = await fetch("http://teams.mechmania.io");
-  if (res.status !== 200) {
-    console.error(`ERROR(${res.status}): ${await res.text()}`);
-    process.exit(1);
-  }
+  if (res.status !== 200)
+    throw Error(`ERROR(${res.status}): ${await res.text()}`);
+  return res.json();
+};
+
+const matches = async (team: ?Team): Promise<?Team> => {
+  const res = await fetch("https://matches.mechmania.io", {
+    headers: {
+      Authorization: `Bearer ${team.token}`
+    }
+  });
+  if (res.status === 401) return null;
+  if (res.status !== 200)
+    throw Error(`ERROR(${res.status}): ${await res.text()}`);
   return res.json();
 };
 
@@ -141,5 +152,6 @@ module.exports = {
   play,
   stats,
   versions,
-  teams
+  teams, 
+  matches
 };

@@ -1,6 +1,7 @@
 //
 const path = require("path");
 const chalk = require("chalk");
+const moment = require("moment");
 const fetch = require("node-fetch");
 const { getTeam } = require("../../utils/auth");
 const handleErrors = require("../../utils/handleErrors");
@@ -38,10 +39,14 @@ module.exports.handler = handleErrors(async argv => {
     Object.values(leaderboardScores.scores)
       .sort((a, b) => b.score - a.score)
       .map(
-        ({ team: { name }, wins, losses, ties, score }) =>
-          `${score} ${chalk.green(name)} - ${chalk.green(wins)}/${chalk.red(
-            losses
-          )}/${chalk.yellow(ties)}`
+        ({ team: { name, latestScript }, wins, losses, ties, score }) =>
+          `${String(score).padEnd(3)} ${chalk.green(
+            name.padEnd(30)
+          )}${chalk.green(String(wins).padEnd(2))}/${chalk.red(
+            String(losses).padEnd(2)
+          )}/${chalk.yellow(String(ties).padEnd(4))} ${chalk.gray(
+            moment(latestScript.createdAt).fromNow()
+          )}`
       )
       .join("\n")
   );

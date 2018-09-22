@@ -102,6 +102,7 @@ module.exports.handler = handleErrors(
   }) => {
     const script1 = path.resolve(argv.script);
     const script2 = argv.script2 && path.resolve(argv.script2);
+    const logfile = argv.logfile && path.resolve(argv.logfile);
     if (argv.visualizer) {
       const visualizer = visualize.getVisualizer();
       try {
@@ -157,7 +158,9 @@ module.exports.handler = handleErrors(
       console.log("Building your bot(s)");
       await build(script1, script2);
 
-      console.log("Running the game engine (only logs using the `log` function will be visible during this)");
+      console.log(
+        "Running the game engine (only logs using the `log` function will be visible during this)"
+      );
       const proc = execa("docker", [
         "run",
         "-v",
@@ -173,6 +176,9 @@ module.exports.handler = handleErrors(
     }
 
     // TODO: pipe stdout to a logfile (if --logfile)
+    if (logfile) {
+      await writeFile(logfile, stdout);
+    }
 
     const team = await getTeam();
     if (argv.visualizer) {

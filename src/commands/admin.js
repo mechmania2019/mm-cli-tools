@@ -1,5 +1,5 @@
 exports.command = 'admin <command>'
-exports.desc = 'Admin toolset'
+exports.desc = false
 exports.builder = function (yargs) {
   return yargs.commandDir('admin')
 }

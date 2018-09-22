@@ -5,7 +5,7 @@ const fetch = require("node-fetch");
 const { getTeam } = require("../../utils/auth");
 const handleErrors = require("../../utils/handleErrors");
 
-const { stats, teams } = require("../../api");
+const { leaderboard } = require("../../api");
 
 module.exports.command = "leaderboard";
 module.exports.describe = false;
@@ -32,21 +32,26 @@ module.exports.handler = handleErrors(async argv => {
     );
   }
 
-  let users = await teams(team);
-  users = users.filter(u => u.latestScript);
-  const usersWithStats = await Promise.all(
-    users.map(async user => ({
-      team: user.name,
-      stats: compute(await stats(user, user.latestScript.key))
-    }))
-  );
+  const leaderboardScores = await leaderboard(team);
 
-  usersWithStats.sort(sortUsers).map((user, i) => {
-    console.log(`
-     ${i}. Team: ${user.padEnd(20).substring(0, 20)} Score: ${
-      user.stats.score
-    } Wins: ${user.stats.wins} Losses: ${user.stats.losses} Ties: ${
-      user.stats.ties
-    } `);
-  });
+  console.log(
+    Object.values(leaderboardScores.scores)
+      .sort((a, b) => b.score - a.score)
+      .map(
+        ({ team: { name }, wins, losses, ties, score }) =>
+          `${score} ${chalk.green(name)} - ${chalk.green(wins)}/${chalk.red(
+            losses
+          )}/${chalk.yellow(ties)}`
+      )
+      .join("\n")
+  );
+  if (leaderboardScores.toBePlayed) {
+    console.log(
+      chalk.red(
+        `WARNING: Still waiting for ${
+          leaderboardScores.toBePlayed.length
+        } matches to be played`
+      )
+    );
+  }
 });

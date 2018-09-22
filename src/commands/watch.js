@@ -59,7 +59,7 @@ module.exports.handler = handleErrors(async () => {
       type: "list",
       name: "match",
       choices: matchesPlayed.map(m => ({
-        name: m.opponent,
+        name: `${m.opponent} - ${chalk.yellow(m.result)}`,
         value: m.match.key
       }))
     }

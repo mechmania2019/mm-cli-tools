@@ -32,18 +32,18 @@ module.exports.handler = handleErrors(async argv => {
     );
   }
 
-  const users = await teams();
+  let users = await teams(team);
+  users = users.filter(u => u.latestScript);
   const usersWithStats = await Promise.all(
     users.map(async user => ({
-      team: user.team.name,
-      stats: compute(await stats(user.team, user.script.key))
+      team: user.name,
+      stats: compute(await stats(user, user.latestScript.key))
     }))
   );
 
-
   usersWithStats.sort(sortUsers).map((user, i) => {
     console.log(`
-     ${i}. Team: ${user.team.padEnd(20).substring(0, 20)} Score: ${
+     ${i}. Team: ${user.padEnd(20).substring(0, 20)} Score: ${
       user.stats.score
     } Wins: ${user.stats.wins} Losses: ${user.stats.losses} Ties: ${
       user.stats.ties

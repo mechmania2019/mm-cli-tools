@@ -139,7 +139,7 @@ const teams = async (team: ?Team): Promise<?Array<Team>> => {
 };
 
 const matches = async (team: ?Team, script: string): Promise<?any> => {
-  const res = await fetch(`https://matches.mechmania.io/matches/${script}`, {
+  const res = await fetch(`https://mm-matches-xpccfufywb.now.sh/matches/${script}`, {
     headers: {
       Authorization: `Bearer ${team.token}`
     }

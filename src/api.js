@@ -8,7 +8,7 @@ import type { Team } from "./utils/auth";
 const isLoggedIn = team => team && team.token;
 
 const login = async (token: string): Promise<?Team> => {
-  const res = await fetch("https://login.mechmania.io", {
+  const res = await fetch("http://localhost:3000", {
     headers: {
       Authorization: `Bearer ${token}`
     }
@@ -22,7 +22,7 @@ const login = async (token: string): Promise<?Team> => {
 };
 
 const register = async (name: string, email: string): Promise<?Team> => {
-  const res = await fetch("https://register.mechmania.io", {
+  const res = await fetch("http://localhost:3000", {
     body: JSON.stringify({ name, email }),
     method: "POST"
   });
@@ -38,7 +38,7 @@ const push = async (team: ?Team, script: ReadableStream): Promise<?Team> => {
     console.error("Not logged in. Run `mm login` or `mm register` first.");
     process.exit(1);
   }
-  const res = await fetch("http://scripts.mechmania.io", {
+  const res = await fetch("http://localhost:3000", {
     method: "POST",
     body: script.pipe(through2()),
     headers: {

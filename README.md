@@ -6,7 +6,7 @@ These are the command line tools to do everything mechmania. This provides an ea
 
 * Clone this repo
 * `yarn`
-* `yarn run build`
-* `yarn link`
+* `yarn build`
+* `npm link`
 
 The `dist/` directory should then have binaries built for every operating system.

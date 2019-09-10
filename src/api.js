@@ -38,7 +38,7 @@ const push = async (team: ?Team, script: ReadableStream): Promise<?Team> => {
     console.error("Not logged in. Run `mm login` or `mm register` first.");
     process.exit(1);
   }
-  const res = await fetch("https://push.mechmania.io", {
+  const res = await fetch("http://push.mechmania.io", {
     method: "POST",
     body: script.pipe(through2()),
     headers: {

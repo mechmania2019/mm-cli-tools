@@ -54,12 +54,15 @@ const push = async (team: ?Team, script: ReadableStream): Promise<?Team> => {
   return await res.json();
 };
 
-const log = async (team: ?Team): Promise<?Team> => {
+const log = async (
+  team: ?Team,
+  version: stringify
+  ): Promise<?Team> => {
   if (!isLoggedIn(team)) {
     console.error("Not logged in. Run `mm login` or `mm register` first.");
     process.exit(1);
   }
-  const res = await fetch("https://logpull.mechmania.io", {
+  const res = await fetch(`https://logpull.mechmania.io/${version}`, {
     headers: {
       Authorization: `Bearer ${team.token}`
     }

@@ -176,7 +176,7 @@ const leaderboard = async (team: ?Team): Promise<?any> => {
 };
 
 const queueall = async (team: ?Team): Promise<?any> => {
-  const res = await fetch(`https://queueall.mechmania.io/leaderboard`, {
+  const res = await fetch(`https://queueall.mechmania.io`, {
     headers: {
       Authorization: `Bearer ${team.token}`
     }
@@ -197,5 +197,6 @@ module.exports = {
   teams,
   matches,
   match,
-  leaderboard
+  leaderboard,
+  queueall
 };

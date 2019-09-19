@@ -13,7 +13,7 @@ module.exports.describe = false;
 
 module.exports.builder = yargs => yargs;
 
-module.exports.handler = handleError(async (argv: {}) => {
+module.exports.handler = handleErrors(async () => {
     const team = await getTeam();
 
     if (!team) {
@@ -34,7 +34,7 @@ module.exports.handler = handleError(async (argv: {}) => {
         );
     } catch (e) {
         console.error(
-            `Error queueing everyone up`
+            `Error queueing everyone up`, e
         );
     }
 });

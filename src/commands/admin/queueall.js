@@ -6,9 +6,35 @@ const inquirer = require("inquirer");
 
 const { getTeam } = require("../../utils/auth");
 const handleErrors = require("../../utils/handleErrors");
-const { stats, teams, versions, matches } = require("../../api");
+const { queueall } = require("../../api");
 
 module.exports.command = "queue-all";
 module.exports.describe = false;
 
 module.exports.builder = yargs => yargs;
+
+module.exports.handler = handleError(async (argv: {}) => {
+    const team = await getTeam();
+
+    if (!team) {
+        return console.log(
+            `Nobody is currently logged in. Use \`${chalk.red(
+              `mm login`
+            )}\` to login or \`${chalk.red(`mm register`)}\` to create a new team.`
+          );
+    }
+    console.log("Queueing up a fresh batch of games.");
+
+    try {
+        console.log(await queueall(team));
+        console.log(
+            chalk.blue(
+                "Everyone is now queued up!"
+            )
+        );
+    } catch (e) {
+        console.error(
+            `Error queueing everyone up`
+        );
+    }
+});

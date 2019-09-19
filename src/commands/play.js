@@ -23,6 +23,8 @@ const writeFile = promisify(fs.writeFile);
 const access = promisify(fs.access);
 const stat = promisify(fs.stat);
 
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
 // const build = async (s1, s2) => {
 //   if (!s2) {
 //     console.log("Building your bot at %s", s1);
@@ -72,27 +74,23 @@ module.exports.builder = (yargs: any) =>
       describe:
         "Bot to play against. If left out, your bot plays against itself"
     })
-    // .option("remote", {
-    //   type: "boolean",
-    //   describe: "EXPERIMENTAL: Build and test your bot in the cloud!"
-    // })
     .option("visualizer", {
       type: "boolean",
       default: true,
       describe:
         "Start the visualizer after the game engine is done processing the game"
     })
-    .option("logfile", {
-      type: "string",
+    // .option("logfile", {
+    //   type: "string",
+    //   describe:
+    //     "Provide a path to a logfile to write the results of the game engine into (the file can be used as the input to the visualizer)"
+    // });
+    .option("wait", {
+      type: "number",
       describe:
-        "Provide a path to a logfile to write the results of the game engine into (the file can be used as the input to the visualizer)"
+        "Time (in seconds) given for the bot to startup before the game start",
+      default: 20
     });
-// .option("timeout", {
-//   type: "number",
-//   describe:
-//     "On slower PCs, increase this number. Your bot will be given x seconds to start up",
-//   default: 3
-// });
 
 module.exports.handler = handleErrors(
   async (argv: {
@@ -101,7 +99,7 @@ module.exports.handler = handleErrors(
     visualizer: ?boolean,
     remote: ?boolean,
     logfile: ?string,
-    timeout: number
+    wait: number
   }) => {
     const bot1 =
       argv.bot.toLowerCase() === "human" ? "HUMAN" : path.resolve(argv.bot);
@@ -111,6 +109,7 @@ module.exports.handler = handleErrors(
         : path.resolve(argv.bot2)
       : bot1;
     const logfile = argv.logfile && path.resolve(argv.logfile);
+    const wait = argv.wait;
 
     if (argv.visualizer) {
       const visualizer = visualize.getVisualizer();
@@ -157,13 +156,80 @@ module.exports.handler = handleErrors(
       );
     }
 
-    //   // console.log("getting");
-    //   console.log("Building your bot(s)");
-    //   await build(bot1, bot2);
+    let bot1IP = bot1;
+    let bot2IP = bot2;
+    let bot1Manifest, bot2Manifest;
+    try {
+      if (bot1 !== "HUMAN") {
+        bot1Manifest = require(path.join(bot1, "mm.json"));
+      }
+      if (bot2 !== "HUMAN") {
+        bot2Manifest = require(path.join(bot2, "mm.json"));
+      }
+    } catch (e) {
+      console.log(chalk.red`ERROR Could not parse manifest file`);
+      console.error(e);
+      process.exit(1);
+    }
 
-    //   console.log("Starting your bots");
+    if (bot1 !== "HUMAN" && bot1Manifest.build) {
+      console.log("Building Bot 1");
+      const buildProc1 = execa.command(bot1Manifest.build, {
+        shell: true,
+        all: true
+      });
+      buildProc1.all.pipe(process.stdout);
+      await buildProc1;
+    }
+    if (bot2 !== "HUMAN" && bot2 !== bot1 && bot2Manifest.build) {
+      console.log("Building Bot 2");
+      const buildProc2 = execa.command(bot2Manifest.build, {
+        shell: true,
+        all: true
+      });
+      buildProc2.all.pipe(process.stdout);
+      await buildProc2;
+    }
+
+    console.log("Starting bots");
+    let bot1proc, bot2proc;
+    if (bot1 === "HUMAN") {
+      console.log("Bot 1 is a human player. Nothing needs to be started");
+    } else if (!bot1Manifest.run) {
+      console.log("mm.json is missing a run Script. Exiting");
+      process.exit(1);
+    } else {
+      bot1proc = execa.command(bot1Manifest.run, {
+        shell: true,
+        all: true,
+        env: { PORT: 2019 }
+      });
+      bot1proc.all.pipe(process.stdout);
+      bot1IP = "http://localhost:2019/";
+    }
+    if (bot2 === "HUMAN") {
+      console.log("Bot 2 is a human player. Nothing needs to be started");
+    } else if (!bot2Manifest.run) {
+      console.log("mm.json is missing a run Script. Exiting");
+      process.exit(1);
+    } else {
+      bot2proc = execa.command(bot2Manifest.run, {
+        shell: true,
+        all: true,
+        env: { PORT: 2525 }
+      });
+      bot2proc.all.pipe(process.stdout);
+      bot2IP = "http://localhost:2525/";
+    }
+
+    if (bot1 !== "HUMAN" || bot2 !== "HUMAN") {
+      console.log(`Waiting ${wait}s for the bots to start`);
+      await sleep(1000 * wait);
+    }
 
     console.log("Simulating a match");
+    // Assert tmpdir
+    await mkdirp(TMP_DIR);
     // java -jar GameEngine.jar [gameId] [boardFile] [player1Name] [player2Name] [player1URL] [player2URL] STDOUT
     const proc = execa("java", [
       "-jar",
@@ -174,26 +240,26 @@ module.exports.handler = handleErrors(
       "Player 2 - NCD", // Neo-Chicago Defensive
       // MMDF - Midwestern Mechanized Defensive Force
       // "The Riggs" - bandits that stole mechs and use them to terrorize
-      bot1,
-      bot2,
-      "STDOUT"
+      bot1IP,
+      bot2IP,
+      LOG_PATH
     ]);
 
     proc.stderr.pipe(process.stderr);
-    proc.stdout.pipe(process.stdout);
+    await proc;
+
+    console.log("Killing bots");
+    bot1proc.kill();
+    bot2proc.kill();
 
     //   // TODO: pipe stdout to a logfile (if --logfile)
     //   if (logfile) {
     //     await writeFile(logfile, stdout);
     //   }
 
-    //   const team = await getTeam();
-    //   if (argv.visualizer) {
-    //     console.log("Setting up visualizer");
-    //     // Assert tmpdir
-    //     await mkdirp(TMP_DIR);
-    //     await writeFile(LOG_PATH, stdout);
-    //     await visualize(LOG_PATH, `${team.name} 1`, `${team.name} 2`);
-    //   }
+    if (argv.visualizer) {
+      console.log("Setting up visualizer");
+      await visualize(LOG_PATH, `1`, `2`);
+    }
   }
 );

@@ -26,7 +26,7 @@
   "dependencies": {
     "app-root-path": "2.1.0",
     "chalk": "2.4.0",
-    "execa": "1.0.0",
+    "execa": "2.0.4",
     "fetch": "1.1.0",
     "get-stream": "4.0.0",
     "inquirer": "6.2.0",

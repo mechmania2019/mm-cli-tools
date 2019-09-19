@@ -175,6 +175,17 @@ const leaderboard = async (team: ?Team): Promise<?any> => {
   return res.json();
 };
 
+const queueall = async (team: ?Team): Promise<?any> => {
+  const res = await fetch(`https://queueall.mechmania.io/leaderboard`, {
+    headers: {
+      Authorization: `Bearer ${team.token}`
+    }
+  });
+  if (res.status !== 200)
+    throw Error(`ERROR(${res.status}): ${await res.text()}`);
+  return res;
+}
+
 module.exports = {
   login,
   register,

@@ -139,14 +139,11 @@ const teams = async (team: ?Team): Promise<?Array<Team>> => {
 };
 
 const matches = async (team: ?Team, script: string): Promise<?any> => {
-  const res = await fetch(
-    `https://mm-matches-xpccfufywb.now.sh/matches/${script}`,
-    {
-      headers: {
-        Authorization: `Bearer ${team.token}`
-      }
+  const res = await fetch(`https://matches.mechmania.io/matches/${script}`, {
+    headers: {
+      Authorization: `Bearer ${team.token}`
     }
-  );
+  });
   if (res.status === 401) return null;
   if (res.status !== 200)
     throw Error(`ERROR(${res.status}): ${await res.text()}`);
@@ -184,7 +181,16 @@ const queueall = async (team: ?Team): Promise<?any> => {
   if (res.status !== 200)
     throw Error(`ERROR(${res.status}): ${await res.text()}`);
   return res;
-}
+};
+
+const releases = async (): Promise<?any> => {
+  const res = await fetch(
+    "https://api.github.com/repos/mechmania2019/releases/releases/latest"
+  );
+  if (res.status !== 200)
+    throw Error(`ERROR(${res.status}): ${await res.text()}`);
+  return res.json();
+};
 
 module.exports = {
   login,
@@ -198,5 +204,6 @@ module.exports = {
   matches,
   match,
   leaderboard,
-  queueall
+  queueall,
+  releases
 };

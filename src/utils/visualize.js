@@ -3,7 +3,8 @@ const os = require("os");
 const run = require("./run");
 const appRoot = require("app-root-path");
 
-const VISUALIZER_DIR = path.join(os.homedir(), ".mm", "visualizer");
+const MM_FILES_DIR = path.join(os.homedir(), ".mm", "files");
+const VISUALIZER_DIR = path.join(MM_FILES_DIR, "visualizer");
 const GAME_NAME = `MM2018`;
 
 const getVisualizer = () => {
@@ -17,14 +18,12 @@ const getVisualizer = () => {
       break;
     case "linux":
       if (process.arch === "x64")
-        return path.join(
-          VISUALIZER_DIR,
-          `${GAME_NAME}.x86_64`
-        );
+        return path.join(VISUALIZER_DIR, `${GAME_NAME}.x86_64`);
       return path.join(VISUALIZER_DIR, `${GAME_NAME}.x86`);
       break;
   }
 };
 
-module.exports = (logFile, p1, p2) => run(getVisualizer(), [logFile, p1 || "Player 1", p2 || "Player 2"]);
+module.exports = (logFile, p1, p2) =>
+  run(getVisualizer(), [logFile, p1 || "Player 1", p2 || "Player 2"]);
 module.exports.getVisualizer = getVisualizer;

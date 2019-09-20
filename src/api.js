@@ -195,6 +195,17 @@ const releases = async (): Promise<?any> => {
   return res.json();
 };
 
+const flusholdversions = async (team: ?Team): Promise<?any> => {
+  const res = await fetch(`http://flusholdversions.mechmania.io`, {
+    headers: {
+      Authorization: `Bearer ${team.token}`
+    }
+  });
+  if (res.status !== 200)
+    throw Error(`ERROR(${res.status}): ${await res.text()}`);
+  return res;
+}
+
 module.exports = {
   login,
   register,
@@ -208,5 +219,6 @@ module.exports = {
   match,
   leaderboard,
   queueall,
+  flusholdversions,
   releases
 };

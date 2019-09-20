@@ -68,6 +68,10 @@ module.exports.handler = handleErrors(async argv => {
       allUserVersions.map(userVersion => console.log(userVersion.createdAt));
       break;
     case "stats":
+      if (!chosenTeam.latestScript) {
+        console.log("This team has no scripts!");
+        break;
+      }
       const userStats = await stats(chosenTeam, chosenTeam.latestScript.key);
       console.log(`Name:       ${chosenTeam.name}`);
       console.log(`Wins:       ${userStats.wins}`);
@@ -76,7 +80,15 @@ module.exports.handler = handleErrors(async argv => {
       console.log(`Scores:     ${userStats.wins * 3 + userStats.ties}`);
       break;
     case "matches":
+      if (!chosenTeam.latestScript) {
+        console.log("This team has no scripts!");
+        break;
+      }
       const allMatches = await matches(chosenTeam);
+      if (!allMatches.length) {
+        console.log("No Matches");
+        break;
+      }
       const teamNames = allMatches.oponentInfo.map(
         (match, i) =>
           users

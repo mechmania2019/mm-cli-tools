@@ -32,6 +32,7 @@
     "fetch": "1.1.0",
     "get-stream": "4.0.0",
     "inquirer": "6.2.0",
+    "lodash": "4.17.13",
     "mkdirp": "0.5.1",
     "moment": "2.22.2",
     "node-fetch": "2.2.0",
@@ -42,7 +43,7 @@
     "yargs": "12.0.2"
   },
   "devDependencies": {
-    "eslint": "4.18.0",
+    "eslint": "4.18.2",
     "flow-bin": "0.66.0",
     "flow-remove-types": "1.2.3",
     "pkg": "4.3.0"

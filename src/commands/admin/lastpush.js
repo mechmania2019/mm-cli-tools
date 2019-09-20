@@ -38,7 +38,7 @@ module.exports.handler = handleErrors(async argv => {
             ? `${latestScript.key} (${moment(latestScript.createdAt).fromNow()})`
             : `NA`,
         mostRecentPush
-            ? `${mostRecentPush} (${moment(mostRecentPush.createdAt).fromNow()})`
+            ? `${mostRecentPush.key} (${moment(mostRecentPush.createdAt).fromNow()})`
             : `NA`
         )
     )

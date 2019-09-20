@@ -31,12 +31,12 @@ module.exports.handler = handleErrors(async argv => {
   }
   const users = await teams(team);
 
-  console.log(users);
+  //console.log(users);
   const choices = users.map(user => ({
-    name: user.team.name,
+    name: user.name,
     value: user
   }));
-  console.log(choices);
+  //console.log(choices);
   const { chosenTeam } = await inquirer.prompt([
     {
       type: "list",
@@ -56,33 +56,33 @@ module.exports.handler = handleErrors(async argv => {
   ]);
 
   switch (mode) {
-    case "stats":
-      console.log(`Name: ${chosenTeam.team.name}`);
-      console.log(`Email: ${chosenTeam.team.email}`);
-      console.log(`Token: ${chosenTeam.team.token}`);
-      console.log(`Latest script url: ${chosenTeam.script.url}`);
-      console.log(`Latest script created At: ${chosenTeam.script.createdAt}`);
+    case "info":
+      console.log(`Name: ${chosenTeam.name}`);
+      console.log(`Email: ${chosenTeam.email}`);
+      console.log(`Token: ${chosenTeam.token}`);
+      console.log(`Latest script url: ${chosenTeam.latestScript ? chosenTeam.latestScript.url : 'NA'}`);
+      console.log(`Latest script created At: ${chosenTeam.latestScript ? chosenTeam.latestScript.createdAt : 'NA'}`);
       break;
     case "versions":
-      const allUserVersions = await versions(chosenTeam.team);
+      const allUserVersions = await versions(chosenTeam);
       allUserVersions.map(userVersion => console.log(userVersion.createdAt));
       break;
     case "stats":
-      const userStats = await stats(chosenTeam.team, chosenTeam.script.key);
-      console.log(`Name:       ${chosenTeam.team.name}`);
+      const userStats = await stats(chosenTeam, chosenTeam.latestScript.key);
+      console.log(`Name:       ${chosenTeam.name}`);
       console.log(`Wins:       ${userStats.wins}`);
       console.log(`Losses      ${userStats.losses}`);
       console.log(`Ties:       ${userStats.ties}`);
       console.log(`Scores:     ${userStats.wins * 3 + userStats.ties}`);
       break;
     case "matches":
-      const allMatches = await matches(chosenTeam.team);
+      const allMatches = await matches(chosenTeam);
       const teamNames = allMatches.oponentInfo.map(
         (match, i) =>
           users
             .map(
               user =>
-                user.script.key === allMatches.oponentInfo[i].key
+                user.latestScript.key === allMatches.oponentInfo[i].key
                   ? user.team.name
                   : ""
             )

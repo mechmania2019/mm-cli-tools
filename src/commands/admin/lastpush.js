@@ -15,6 +15,12 @@ module.exports.describe =
 
 module.exports.builder = yargs => yargs;
 
+function TeamLog(name, script, latestPush) {
+  this.Team = name;
+  this.LatestScript = script;
+  this.LastPush = latestPush;
+}
+
 module.exports.handler = handleErrors(async argv => {
   const team = await getTeam();
   if (!team) {
@@ -23,16 +29,19 @@ module.exports.handler = handleErrors(async argv => {
     );
   }
   const teamList = await teams(team);
-  console.log(
-    teamList
-      .map(
-        ({ name, latestScript }) =>
-          `${chalk.red(name)} ${
-            latestScript
-              ? `last pushed ${moment(latestScript.createdAt).fromNow()}`
-              : `has not yet pushed`
-          }`
-      )
-      .join("\n")
+  console.table( 
+    teamList.map(
+      ({ name, latestScript, mostRecentPush }) =>
+        new TeamLog(
+        chalk.red(name),
+        latestScript
+            ? `${latestScript.key} (${moment(latestScript.createdAt).fromNow()})`
+            : `NA`,
+        mostRecentPush
+            ? `${mostRecentPush.key} (${moment(mostRecentPush.createdAt).fromNow()})`
+            : `NA`
+        )
+    )
   );
+
 });

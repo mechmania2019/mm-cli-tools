@@ -4,6 +4,7 @@ const fetch = require("node-fetch");
 const moment = require("moment");
 const inquirer = require("inquirer");
 
+const result = require("../../utils/result");
 const { getTeam } = require("../../utils/auth");
 const handleErrors = require("../../utils/handleErrors");
 const { stats, teams, versions, matches } = require("../../api");
@@ -12,13 +13,6 @@ module.exports.command = "user";
 module.exports.describe = false;
 
 module.exports.builder = yargs => yargs;
-
-function sortUsers(a, b) {
-  return a.stats.wins / (a.stats.wins + a.stats.losses + a.stats.ties) <
-    b.stats.wins / (b.stats.wins + b.stats.losses + b.stats.ties)
-    ? 1
-    : -1;
-}
 
 module.exports.handler = handleErrors(async argv => {
   const team = await getTeam();
@@ -29,8 +23,6 @@ module.exports.handler = handleErrors(async argv => {
     );
   }
   const users = await teams(team);
-
-  console.log(users);
 
   const choices = users.map(user => ({
     name: user.name,
@@ -45,7 +37,15 @@ module.exports.handler = handleErrors(async argv => {
     }
   ]);
 
-  const modes = ["info", "versions", "stats", "matches"];
+  const allUserVersions = await versions(chosenTeam);
+
+  const versionIds = []
+
+  for (let i = 0; i < allUserVersions.length; i++) {
+    versionIds.push(allUserVersions[i].key);
+  }
+
+  const modes = ["info", "versions", "matches"];
 
   const { mode } = await inquirer.prompt([
     {
@@ -60,47 +60,57 @@ module.exports.handler = handleErrors(async argv => {
       console.log(`Name: ${chosenTeam.name}`);
       console.log(`Email: ${chosenTeam.email}`);
       console.log(`Token: ${chosenTeam.token}`);
-      console.log(`Most recent push: ${chosenTeam.mostRecentPush._id}`);
-      console.log(`Latest working script: ${chosenTeam.latestScript._id}`);
+      console.log(`Most recent push: ${chosenTeam.mostRecentPush.key}`);
+      console.log(`Latest working script: ${chosenTeam.latestScript.key}`);
       break;
-    case "versions":
-      const allUserVersions = await versions(chosenTeam);
-      allUserVersions.map(userVersion => console.log(chosenTeam.latestScript._id));
-      break;
-    case "stats":
-      const userStats = await stats(chosenTeam);
-      console.log(`Name:       ${chosenTeam.name}`);
-      console.log(`Wins:       ${userStats.wins}`);
-      console.log(`Losses      ${userStats.losses}`);
-      console.log(`Ties:       ${userStats.ties}`);
-      console.log(`Scores:     ${userStats.wins * 3 + userStats.ties}`);
-      break;
-    case "matches":
-      const allMatches = await matches(chosenTeam);
-      const teamNames = allMatches.oponentInfo.map(
-        (match, i) =>
-          users
-            .map(
-              user =>
-                user.latestScript.key === allMatches.oponentInfo[i].key
-                  ? user.team.name
-                  : ""
-            )
-            .filter(name => name != "")[0]
-      );
 
-      for (let i = 0; i < teamNames.length; i++) {
-        if (teamNames[i] != undefined) {
-          console.log(
-            " " +
-              teamNames[i].padEnd(20).substring(0, 20) +
-              "  : " +
-              allMatches.wins[i]
-          );
+
+    case "versions":
+      if (allUserVersions.length === 0) {
+        console.log("This team has not pushed any scripts");
+      } else {
+        for (let i = 0; i < allUserVersions.length; i++) {
+          console.log(allUserVersions[i].key);
         }
       }
-
       break;
+
+    case "matches":
+      if (allUserVersions.length === 0) {
+        "This user has not pushed any scripts check back later.";
+      } else {
+        const chosenVersion = await inquirer.prompt([
+          {
+            type: "list",
+            name: "version",
+            choices: versionIds
+          }
+        ]);
+        const allMatches = await matches(chosenTeam, chosenVersion.version);
+
+        let wins = 0;
+        let losses = 0;
+        let ties = 0;
+
+        for (let i = 0; i < allMatches.length; i++) {
+          if (allMatches[i].result === 'win') {
+            wins++;
+          } else if (allMatches[i].result === 'loss') {
+            losses++;
+          } else {
+            ties++;
+          }
+          console.log(`${allMatches[i].opponent.toString().padEnd(30, " ")} ${result(allMatches[i].result)}`);
+        }
+        
+        console.log(
+          `${chalk.green(`Total Wins: ${wins}`)}, ${chalk.red(`Total Losses: ${losses}`)}, ${chalk.blue(`Total Ties: ${ties}`)}`
+        );
+
+      }
+      break;
+
+
     default:
       console.log("You broke the cli tool, congrats. Please report this");
   }

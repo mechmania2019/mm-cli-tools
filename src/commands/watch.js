@@ -10,6 +10,7 @@ const inquirer = require("inquirer");
 const moment = require("moment");
 const chalk = require("chalk");
 
+const result = require('../utils/result');
 const checkGameVersion = require("../utils/checkGameVersion");
 const handleErrors = require("../utils/handleErrors");
 const visualize = require("../utils/visualize");
@@ -81,7 +82,7 @@ module.exports.handler = handleErrors(async (argv: { input: ?string }) => {
       type: "list",
       name: "match",
       choices: matchesPlayed.map(m => ({
-        name: `${m.opponent} - ${chalk.yellow(m.result)}`,
+        name: `${m.opponent} - ${result(m.result)}`,
         value: m.match.key
       }))
     }

@@ -25,40 +25,6 @@ const stat = promisify(fs.stat);
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-// const build = async (s1, s2) => {
-//   if (!s2) {
-//     console.log("Building your bot at %s", s1);
-//     const { code } = await run("docker", [
-//       "build",
-//       s1,
-//       "-t",
-//       "mechmania.io/bot/1",
-//       "-t",
-//       "mechmania.io/bot/2"
-//     ]);
-//     if (code && code !== 0) {
-//       console.error("Error building your bot");
-//       process.exit(code);
-//     }
-//   } else {
-//     await Promise.all(
-//       [s1, s2].map(async (s, i) => {
-//         console.log("Building your bot at %s", s);
-//         const { code } = await run("docker", [
-//           "build",
-//           s,
-//           "-t",
-//           `mechmania.io/bot/${i + 1}`
-//         ]);
-//         if (code && code !== 0) {
-//           console.error("Error building your bot");
-//           process.exit(code);
-//         }
-//       })
-//     );
-//   }
-// };
-
 module.exports.command = "play <bot> [bot2]";
 module.exports.describe =
   "Watch your bot play against itself (or another bot). To see other possible commands, run `mm help`";
@@ -80,11 +46,16 @@ module.exports.builder = (yargs: any) =>
       describe:
         "Start the visualizer after the game engine is done processing the game"
     })
-    // .option("logfile", {
-    //   type: "string",
-    //   describe:
-    //     "Provide a path to a logfile to write the results of the game engine into (the file can be used as the input to the visualizer)"
-    // });
+    .option("logfile", {
+      type: "string",
+      describe:
+        "Provide a path to a logfile to write the game logs to (the file can be used in conjunction with `mm play --input ...`)"
+    })
+    .option("input", {
+      type: "string",
+      describe:
+        "Provide a path to a logfile to visualize. A new game isn't simultated. Use this with the output of `mm play` with --logifle."
+    })
     .option("wait", {
       type: "number",
       describe:
@@ -99,6 +70,7 @@ module.exports.handler = handleErrors(
     visualizer: ?boolean,
     remote: ?boolean,
     logfile: ?string,
+    input: ?string,
     wait: number
   }) => {
     const bot1 =
@@ -109,7 +81,14 @@ module.exports.handler = handleErrors(
         : path.resolve(argv.bot2)
       : bot1;
     const logfile = argv.logfile && path.resolve(argv.logfile);
+    const input = argv.input && path.resolve(argv.input);
     const wait = argv.wait;
+
+    if (input) {
+      console.log("Just using the input to visualize.");
+      await visualize(input);
+      return;
+    }
 
     if (argv.visualizer) {
       const visualizer = visualize.getVisualizer();
@@ -134,7 +113,7 @@ module.exports.handler = handleErrors(
         }
       } catch (e) {
         console.error(
-          `Error accesssing the directory ${bot1}. Are you sure it exists and you permissions to access it`
+          `Error accesssing the directory ${bot1}. Are you sure it exists and you have permissions to access it`
         );
         process.exit(1);
       }
@@ -238,8 +217,10 @@ module.exports.handler = handleErrors(
     }
 
     console.log("Simulating a match");
-    // Assert tmpdir
-    await mkdirp(TMP_DIR);
+    if (!logfile) {
+      // Assert tmpdir
+      await mkdirp(TMP_DIR);
+    }
     // java -jar GameEngine.jar [gameId] [boardFile] [player1Name] [player2Name] [player1URL] [player2URL] STDOUT
     const proc = execa("java", [
       "-jar",
@@ -252,7 +233,7 @@ module.exports.handler = handleErrors(
       // "The Riggs" - bandits that stole mechs and use them to terrorize
       bot1IP,
       bot2IP,
-      LOG_PATH
+      logfile || LOG_PATH
     ]);
 
     proc.stderr.pipe(process.stderr);
@@ -269,7 +250,7 @@ module.exports.handler = handleErrors(
 
     if (argv.visualizer) {
       console.log("Setting up visualizer");
-      await visualize(LOG_PATH);
+      await visualize(logfile || LOG_PATH);
     }
   }
 );

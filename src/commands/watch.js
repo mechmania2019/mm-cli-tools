@@ -29,6 +29,15 @@ module.exports.handler = handleErrors(async () => {
   const team = await getTeam();
   const me = team.name;
 
+  try {
+    await access(visualize.getVisualizer(), fs.constants.X_OK);
+  } catch (e) {
+    console.error(
+      "Could not find visualizer. Run `mm download` before trying this again."
+    );
+    process.exit(1);
+  }
+
   const choices = (await versions(team)).map(({ key, createdAt }) => ({
     name: moment(createdAt).from(),
     value: key

@@ -31,5 +31,6 @@ const getVisualizer = () => {
   }
 };
 
-module.exports = logFile => run(getVisualizer(), ["--data", logFile]);
+module.exports = logFile =>
+  run(getVisualizer(), ["--data", logFile], { shell: true });
 module.exports.getVisualizer = getVisualizer;

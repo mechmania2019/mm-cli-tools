@@ -42,9 +42,9 @@ module.exports.handler = handleErrors(async argv => {
         ({ team: { name, latestScript }, wins, losses, ties, score }) =>
           `${String(score).padEnd(3)} ${chalk.green(
             name.padEnd(30)
-          )}${chalk.green(String(wins).padEnd(2))}/${chalk.red(
+          )}${chalk.green(String(wins).padEnd(2))}/ ${chalk.red(
             String(losses).padEnd(2)
-          )}/${chalk.yellow(String(ties).padEnd(4))} ${chalk.gray(
+          )}/ ${chalk.blue(String(ties).padEnd(4))} ${chalk.gray(
             moment(latestScript.createdAt).fromNow()
           )}`
       )

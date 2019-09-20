@@ -1,4 +1,4 @@
-// @flow
+//@flow
 
 const { stats, versions } = require("../api");
 const { getTeam } = require("../utils/auth");

@@ -54,12 +54,15 @@ const push = async (team: ?Team, script: ReadableStream): Promise<?Team> => {
   return await res.json();
 };
 
-const log = async (team: ?Team): Promise<?Team> => {
+const log = async (
+  team: ?Team,
+  version: stringify
+  ): Promise<?Team> => {
   if (!isLoggedIn(team)) {
     console.error("Not logged in. Run `mm login` or `mm register` first.");
     process.exit(1);
   }
-  const res = await fetch("https://logpull.mechmania.io", {
+  const res = await fetch(`https://logpull.mechmania.io/${version}`, {
     headers: {
       Authorization: `Bearer ${team.token}`
     }
@@ -139,14 +142,11 @@ const teams = async (team: ?Team): Promise<?Array<Team>> => {
 };
 
 const matches = async (team: ?Team, script: string): Promise<?any> => {
-  const res = await fetch(
-    `https://mm-matches-xpccfufywb.now.sh/matches/${script}`,
-    {
-      headers: {
-        Authorization: `Bearer ${team.token}`
-      }
+  const res = await fetch(`https://matches.mechmania.io/matches/${script}`, {
+    headers: {
+      Authorization: `Bearer ${team.token}`
     }
-  );
+  });
   if (res.status === 401) return null;
   if (res.status !== 200)
     throw Error(`ERROR(${res.status}): ${await res.text()}`);
@@ -184,7 +184,16 @@ const queueall = async (team: ?Team): Promise<?any> => {
   if (res.status !== 200)
     throw Error(`ERROR(${res.status}): ${await res.text()}`);
   return res;
-}
+};
+
+const releases = async (): Promise<?any> => {
+  const res = await fetch(
+    "https://api.github.com/repos/mechmania2019/releases/releases/latest"
+  );
+  if (res.status !== 200)
+    throw Error(`ERROR(${res.status}): ${await res.text()}`);
+  return res.json();
+};
 
 const flusholdversions = async (team: ?Team): Promise<?any> => {
   const res = await fetch(`http://flusholdversions.mechmania.io`, {
@@ -210,5 +219,6 @@ module.exports = {
   match,
   leaderboard,
   queueall,
-  flusholdversions
+  flusholdversions,
+  releases
 };

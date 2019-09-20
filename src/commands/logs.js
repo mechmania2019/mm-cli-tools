@@ -14,10 +14,18 @@ module.exports.builder = (yargs: any) => yargs;
 module.exports.handler = handleErrors(async () => {
   let team = await getTeam();
 
-  const choices = (await versions(team)).map(({ key, createdAt }) => ({
-    name: moment(createdAt).from(),
-    value: key
-  }));
+  const choices = (await versions(team)).map(
+    ({ key, createdAt, isLatestScript, isMostRecentPush }) => ({
+      name: `${moment(createdAt).from()}${
+        isLatestScript
+          ? chalk.green(" active")
+          : isMostRecentPush
+          ? chalk.yellow(" building")
+          : ""
+      }`,
+      value: key
+    })
+  );
 
   if (!choices.length) {
     console.log(

@@ -176,7 +176,7 @@ const leaderboard = async (team: ?Team): Promise<?any> => {
 };
 
 const queueall = async (team: ?Team): Promise<?any> => {
-  const res = await fetch(`https://queueall.mechmania.io`, {
+  const res = await fetch(`http://queueall.mechmania.io`, {
     headers: {
       Authorization: `Bearer ${team.token}`
     }

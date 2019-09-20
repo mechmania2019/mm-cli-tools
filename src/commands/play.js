@@ -28,7 +28,6 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 let procs = new Set([]);
 onDeath(sig => {
-  console.log("Dying. Got", sig);
   if (!procs.size) {
     return;
   }
@@ -77,7 +76,7 @@ module.exports.builder = (yargs: any) =>
       type: "number",
       describe:
         "Time (in seconds) given for the bot to startup before the game start",
-      default: 20
+      default: 3
     });
 
 module.exports.handler = handleErrors(
@@ -246,13 +245,13 @@ module.exports.handler = handleErrors(
         path.join(MM_FILES_DIR, "GameEngine.jar"),
         "game",
         path.join(MM_FILES_DIR, "board.csv"),
-        "KMG (Bot 1)", // Kentucky Machinists Guild
-        "NCD (Bot 2)", // Neo-Chicago Defensive
+        '"KMG (Bot 1)"', // Kentucky Machinists Guild
+        '"NCD (Bot 2)"', // Neo-Chicago Defensive
         // MMDF - Midwestern Mechanized Defensive Force
         // "The Riggs" - bandits that stole mechs and use them to terrorize
         bot1IP,
         bot2IP,
-        logfile || LOG_PATH
+        `"${logfile || LOG_PATH}"`
       ],
       {
         shell: true
@@ -264,16 +263,21 @@ module.exports.handler = handleErrors(
     procs.delete(proc);
 
     console.log("Killing bots");
-    bot1proc.kill();
-    bot2proc.kill();
+    bot1proc.kill("SIGTERM");
+    bot2proc.kill("SIGTERM");
 
     if (argv.visualizer) {
       console.log("Setting up visualizer");
       await visualize(logfile || LOG_PATH);
     }
 
-    await bot1proc;
-    await bot2proc;
+    try {
+      await bot1proc;
+    } catch (e) {}
+    try {
+      await bot2proc;
+    } catch (e) {}
+
     procs.delete(bot1proc);
     procs.delete(bot2proc);
   }

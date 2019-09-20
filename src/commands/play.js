@@ -175,6 +175,7 @@ module.exports.handler = handleErrors(
     if (bot1 !== "HUMAN" && bot1Manifest.build) {
       console.log("Building Bot 1");
       const buildProc1 = execa.command(bot1Manifest.build, {
+        cwd: bot1,
         shell: true,
         all: true
       });
@@ -184,6 +185,7 @@ module.exports.handler = handleErrors(
     if (bot2 !== "HUMAN" && bot2 !== bot1 && bot2Manifest.build) {
       console.log("Building Bot 2");
       const buildProc2 = execa.command(bot2Manifest.build, {
+        cwd: bot2,
         shell: true,
         all: true
       });
@@ -200,6 +202,7 @@ module.exports.handler = handleErrors(
       process.exit(1);
     } else {
       bot1proc = execa.command(bot1Manifest.run, {
+        cwd: bot1,
         shell: true,
         all: true,
         env: { PORT: 2019 }
@@ -214,6 +217,7 @@ module.exports.handler = handleErrors(
       process.exit(1);
     } else {
       bot2proc = execa.command(bot2Manifest.run, {
+        cwd: bot2,
         shell: true,
         all: true,
         env: { PORT: 2525 }
@@ -259,7 +263,7 @@ module.exports.handler = handleErrors(
 
     if (argv.visualizer) {
       console.log("Setting up visualizer");
-      await visualize(LOG_PATH, `1`, `2`);
+      await visualize(LOG_PATH);
     }
   }
 );

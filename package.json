@@ -1,6 +1,6 @@
 {
   "name": "mechmania",
-  "version": "2.3.0",
+  "version": "2.3.2",
   "description": "CLI tools to do everything mechmania (test your bot, upload them to mm servers, queue games, etc.)",
   "main": "index.js",
   "repository": "https://github.com/pranaygp/mm-cli-tools",
@@ -36,6 +36,7 @@
     "mkdirp": "0.5.1",
     "moment": "2.22.2",
     "node-fetch": "2.2.0",
+    "ondeath": "^1.0.0",
     "rimraf": "2.6.2",
     "tar": "4.4.6",
     "through2": "2.0.3",

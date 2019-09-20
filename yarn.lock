@@ -1130,6 +1130,11 @@ once@^1.3.0, once@^1.3.1, once@^1.4.0:
   dependencies:
     wrappy "1"
 
+ondeath@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/ondeath/-/ondeath-1.0.0.tgz#d813a999a73579a401a3503c1c6b58cfb6edbbd7"
+  integrity sha512-WtWeH2xo1d1/sjg+mJqGO3vp1jkeg0EebXNIkbiFKaDz/Ty/Gx+q/JXXNN2SATgIlUAOQWQwWDqiODKfF1S5Nw==
+
 onetime@^2.0.0:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/onetime/-/onetime-2.0.1.tgz#067428230fd67443b2794b22bba528b6867962d4"

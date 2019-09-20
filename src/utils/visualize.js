@@ -25,8 +25,8 @@ const getVisualizer = () => {
       break;
     case "linux":
       if (process.arch === "x64")
-        return path.join(VISUALIZER_DIR, "Linux", `Linux Build.x86_64`);
-      return path.join(VISUALIZER_DIR, "Linux", `Linux Build.x86`);
+        return path.join(VISUALIZER_DIR, "Linux", "Linux.x86_64");
+      return path.join(VISUALIZER_DIR, "Linux", "Linux.x86");
       break;
   }
 };

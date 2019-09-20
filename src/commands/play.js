@@ -7,6 +7,7 @@ const mkdirp = promisify(require("mkdirp"));
 const chalk = require("chalk");
 const tar = require("tar");
 const execa = require("execa");
+const onDeath = require("ondeath");
 
 const { releases } = require("../api");
 const { getGameVersion } = require("../utils/version");
@@ -24,6 +25,22 @@ const access = promisify(fs.access);
 const stat = promisify(fs.stat);
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+let procs = new Set([]);
+onDeath(sig => {
+  console.log("Dying. Got", sig);
+  if (!procs.size) {
+    return;
+  }
+  console.log("Killing processes");
+  procs.forEach(proc => proc.kill("SIGKILL"));
+  Promise.all(Array.from(procs)).then(() => {
+    console.log("All proccesses were killed. Closing.");
+    procs.clear();
+    process.exit(0);
+  });
+  return false;
+});
 
 module.exports.command = "play <bot> [bot2]";
 module.exports.describe =
@@ -158,8 +175,10 @@ module.exports.handler = handleErrors(
         shell: true,
         all: true
       });
+      procs.add(buildProc1);
       buildProc1.all.pipe(process.stdout);
       await buildProc1;
+      procs.delete(buildProc1);
     }
     if (bot2 !== "HUMAN" && bot2 !== bot1 && bot2Manifest.build) {
       console.log("Building Bot 2");
@@ -168,8 +187,10 @@ module.exports.handler = handleErrors(
         shell: true,
         all: true
       });
+      procs.add(buildProc2);
       buildProc2.all.pipe(process.stdout);
       await buildProc2;
+      procs.delete(buildProc2);
     }
 
     console.log("Starting bots");
@@ -186,6 +207,7 @@ module.exports.handler = handleErrors(
         all: true,
         env: { PORT: 2019 }
       });
+      procs.add(bot1proc);
       bot1proc.all.pipe(process.stdout);
       bot1IP = "http://localhost:2019/";
     }
@@ -201,15 +223,10 @@ module.exports.handler = handleErrors(
         all: true,
         env: { PORT: 2525 }
       });
+      procs.add(bot2proc);
       bot2proc.all.pipe(process.stdout);
       bot2IP = "http://localhost:2525/";
     }
-    process.on("SIGTERM", async () => {
-      console.log("Got SIGTERM. Killing bots");
-      bot1proc.kill();
-      bot2proc.kill();
-      await Promise.all(bot1proc, bot2proc);
-    });
 
     if (bot1 !== "HUMAN" || bot2 !== "HUMAN") {
       console.log(`Waiting ${wait}s for the bots to start`);
@@ -222,35 +239,42 @@ module.exports.handler = handleErrors(
       await mkdirp(TMP_DIR);
     }
     // java -jar GameEngine.jar [gameId] [boardFile] [player1Name] [player2Name] [player1URL] [player2URL] STDOUT
-    const proc = execa("java", [
-      "-jar",
-      path.join(MM_FILES_DIR, "GameEngine.jar"),
-      "game",
-      path.join(MM_FILES_DIR, "board.csv"),
-      "KMG (Bot 1)", // Kentucky Machinists Guild
-      "NCD (Bot 2)", // Neo-Chicago Defensive
-      // MMDF - Midwestern Mechanized Defensive Force
-      // "The Riggs" - bandits that stole mechs and use them to terrorize
-      bot1IP,
-      bot2IP,
-      logfile || LOG_PATH
-    ]);
-
+    const proc = execa(
+      "java",
+      [
+        "-jar",
+        path.join(MM_FILES_DIR, "GameEngine.jar"),
+        "game",
+        path.join(MM_FILES_DIR, "board.csv"),
+        "KMG (Bot 1)", // Kentucky Machinists Guild
+        "NCD (Bot 2)", // Neo-Chicago Defensive
+        // MMDF - Midwestern Mechanized Defensive Force
+        // "The Riggs" - bandits that stole mechs and use them to terrorize
+        bot1IP,
+        bot2IP,
+        logfile || LOG_PATH
+      ],
+      {
+        shell: true
+      }
+    );
+    procs.add(proc);
     proc.stderr.pipe(process.stderr);
     await proc;
+    procs.delete(proc);
 
     console.log("Killing bots");
     bot1proc.kill();
     bot2proc.kill();
 
-    //   // TODO: pipe stdout to a logfile (if --logfile)
-    //   if (logfile) {
-    //     await writeFile(logfile, stdout);
-    //   }
-
     if (argv.visualizer) {
       console.log("Setting up visualizer");
       await visualize(logfile || LOG_PATH);
     }
+
+    await bot1proc;
+    await bot2proc;
+    procs.delete(bot1proc);
+    procs.delete(bot2proc);
   }
 );

@@ -1,6 +1,6 @@
 {
   "name": "mechmania",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "CLI tools to do everything mechmania (test your bot, upload them to mm servers, queue games, etc.)",
   "main": "index.js",
   "repository": "https://github.com/pranaygp/mm-cli-tools",

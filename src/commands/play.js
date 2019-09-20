@@ -227,8 +227,8 @@ module.exports.handler = handleErrors(
       path.join(MM_FILES_DIR, "GameEngine.jar"),
       "game",
       path.join(MM_FILES_DIR, "board.csv"),
-      "Player 1 - KMG", // Kentucky Machinists Guild
-      "Player 2 - NCD", // Neo-Chicago Defensive
+      "KMG (Bot 1)", // Kentucky Machinists Guild
+      "NCD (Bot 2)", // Neo-Chicago Defensive
       // MMDF - Midwestern Mechanized Defensive Force
       // "The Riggs" - bandits that stole mechs and use them to terrorize
       bot1IP,

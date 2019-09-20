@@ -14,6 +14,8 @@ module.exports.describe = false;
 module.exports.builder = (yargs: any) => yargs;
 
 module.exports.handler = handleErrors(async () => {
+  console.log("mm stats is currently disabled.");
+  return;
   let team = await getTeam();
 
   const choices = (await versions(team)).map(({ key, createdAt }) => ({

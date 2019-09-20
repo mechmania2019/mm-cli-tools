@@ -1,3 +1,5 @@
+//@flow
+
 const { stats, versions } = require("../api");
 const { getTeam } = require("../utils/auth");
 const inquirer = require("inquirer");

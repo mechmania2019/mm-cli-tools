@@ -9,7 +9,7 @@ const chalk = require("chalk");
 const handleErrors = require("../utils/handleErrors");
 
 module.exports.command = "stats";
-module.exports.describe = "Get stats for your bots";
+module.exports.describe = false;
 
 module.exports.builder = (yargs: any) => yargs;
 

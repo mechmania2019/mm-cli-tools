@@ -1,4 +1,3 @@
-//
 const path = require("path");
 const chalk = require("chalk");
 const fetch = require("node-fetch");
@@ -31,12 +30,13 @@ module.exports.handler = handleErrors(async argv => {
   }
   const users = await teams(team);
 
-  //console.log(users);
+  console.log(users);
+
   const choices = users.map(user => ({
     name: user.name,
     value: user
   }));
-  //console.log(choices);
+
   const { chosenTeam } = await inquirer.prompt([
     {
       type: "list",
@@ -45,7 +45,7 @@ module.exports.handler = handleErrors(async argv => {
     }
   ]);
 
-  const modes = ["stats", "info", "versions", "matches"];
+  const modes = ["info", "versions", "stats", "matches"];
 
   const { mode } = await inquirer.prompt([
     {
@@ -60,19 +60,15 @@ module.exports.handler = handleErrors(async argv => {
       console.log(`Name: ${chosenTeam.name}`);
       console.log(`Email: ${chosenTeam.email}`);
       console.log(`Token: ${chosenTeam.token}`);
-      console.log(`Latest script url: ${chosenTeam.latestScript ? chosenTeam.latestScript.url : 'NA'}`);
-      console.log(`Latest script created At: ${chosenTeam.latestScript ? chosenTeam.latestScript.createdAt : 'NA'}`);
+      console.log(`Most recent push: ${chosenTeam.mostRecentPush._id}`);
+      console.log(`Latest working script: ${chosenTeam.latestScript._id}`);
       break;
     case "versions":
       const allUserVersions = await versions(chosenTeam);
-      allUserVersions.map(userVersion => console.log(userVersion.createdAt));
+      allUserVersions.map(userVersion => console.log(chosenTeam.latestScript._id));
       break;
     case "stats":
-      if (!chosenTeam.latestScript) {
-        console.log("This team has no scripts!");
-        break;
-      }
-      const userStats = await stats(chosenTeam, chosenTeam.latestScript.key);
+      const userStats = await stats(chosenTeam);
       console.log(`Name:       ${chosenTeam.name}`);
       console.log(`Wins:       ${userStats.wins}`);
       console.log(`Losses      ${userStats.losses}`);
@@ -80,15 +76,7 @@ module.exports.handler = handleErrors(async argv => {
       console.log(`Scores:     ${userStats.wins * 3 + userStats.ties}`);
       break;
     case "matches":
-      if (!chosenTeam.latestScript) {
-        console.log("This team has no scripts!");
-        break;
-      }
       const allMatches = await matches(chosenTeam);
-      if (!allMatches.length) {
-        console.log("No Matches");
-        break;
-      }
       const teamNames = allMatches.oponentInfo.map(
         (match, i) =>
           users
@@ -116,5 +104,4 @@ module.exports.handler = handleErrors(async argv => {
     default:
       console.log("You broke the cli tool, congrats. Please report this");
   }
-  console.log(mode);
 });

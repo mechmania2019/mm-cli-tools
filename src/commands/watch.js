@@ -68,13 +68,13 @@ module.exports.handler = handleErrors(async () => {
   console.log(`Fetching match ${match}`);
   const matchDataRes = await getMatch(team, match);
 
-  const t1 = matchDataRes.headers.get("x-team-1");
-  const t2 = matchDataRes.headers.get("x-team-2");
+  // const t1 = matchDataRes.headers.get("x-team-1");
+  // const t2 = matchDataRes.headers.get("x-team-2");
   const matchData = await matchDataRes.text();
 
   console.log("Setting up visualizer");
   // Assert tmpdir
   await mkdirp(TMP_DIR);
   await writeFile(LOG_PATH, matchData);
-  await visualize(LOG_PATH, t1, t2);
+  await visualize(LOG_PATH);
 });

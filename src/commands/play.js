@@ -225,6 +225,12 @@ module.exports.handler = handleErrors(
       bot2proc.all.pipe(process.stdout);
       bot2IP = "http://localhost:2525/";
     }
+    process.on("SIGTERM", async () => {
+      console.log("Got SIGTERM. Killing bots");
+      bot1proc.kill();
+      bot2proc.kill();
+      await Promise.all(bot1proc, bot2proc);
+    });
 
     if (bot1 !== "HUMAN" || bot2 !== "HUMAN") {
       console.log(`Waiting ${wait}s for the bots to start`);

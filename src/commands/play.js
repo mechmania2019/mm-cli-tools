@@ -9,10 +9,7 @@ const tar = require("tar");
 const execa = require("execa");
 const onDeath = require("ondeath");
 
-const { releases } = require("../api");
-const { getGameVersion } = require("../utils/version");
-const { getTeam } = require("../utils/auth");
-const run = require("../utils/run");
+const checkGameVersion = require("../utils/checkGameVersion");
 const visualize = require("../utils/visualize");
 const handleErrors = require("../utils/handleErrors");
 
@@ -27,15 +24,26 @@ const stat = promisify(fs.stat);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 let procs = new Set([]);
+let dying = false;
 onDeath(sig => {
+  dying = true;
   if (!procs.size) {
     return;
   }
-  console.log("Killing processes");
-  procs.forEach(proc => proc.kill("SIGKILL"));
-  Promise.all(Array.from(procs)).then(() => {
-    console.log("All proccesses were killed. Closing.");
-    procs.clear();
+  console.log(`Killing ${Array.from(procs).length} processes`);
+  Promise.all(
+    Array.from(procs).map(async proc => {
+      const command = proc.spawnargs[2];
+      console.log(`Killing ${command}`);
+      proc.kill("SIGKILL");
+      try {
+        await proc;
+      } catch (e) {}
+      console.log(`Killed ${command}`);
+      procs.delete(proc);
+    })
+  ).then(() => {
+    console.log("All proccesses were killed. Exiting.");
     process.exit(0);
   });
   return false;
@@ -65,12 +73,7 @@ module.exports.builder = (yargs: any) =>
     .option("logfile", {
       type: "string",
       describe:
-        "Provide a path to a logfile to write the game logs to (the file can be used in conjunction with `mm play --input ...`)"
-    })
-    .option("input", {
-      type: "string",
-      describe:
-        "Provide a path to a logfile to visualize. A new game isn't simultated. Use this with the output of `mm play` with --logifle."
+        "Provide a path to a logfile to write the game logs to (the file can be used in conjunction with `mm watch --input ...`)"
     })
     .option("wait", {
       type: "number",
@@ -86,7 +89,6 @@ module.exports.handler = handleErrors(
     visualizer: ?boolean,
     remote: ?boolean,
     logfile: ?string,
-    input: ?string,
     wait: number
   }) => {
     const bot1 =
@@ -134,22 +136,7 @@ module.exports.handler = handleErrors(
         process.exit(1);
       }
     }
-
-    console.log("Checking if you have the latest version");
-    const manifest = await releases();
-    const local = await getGameVersion();
-    const remote = manifest.tag_name;
-    console.log(
-      `Your game version ${chalk[local === remote ? "green" : "red"](local)}`
-    );
-    console.log(`Latest version available ${chalk.green(remote)}`);
-    if (local !== remote) {
-      console.log(
-        `You have an outdated version of the game. Run ${chalk.red(
-          "mm update"
-        )} to get the latest version.`
-      );
-    }
+    await checkGameVersion();
 
     let bot1IP = bot1;
     let bot2IP = bot2;
@@ -230,6 +217,9 @@ module.exports.handler = handleErrors(
     if (bot1 !== "HUMAN" || bot2 !== "HUMAN") {
       console.log(`Waiting ${wait}s for the bots to start`);
       await sleep(1000 * wait);
+      if (dying) {
+        return;
+      }
     }
 
     console.log("Simulating a match");
@@ -245,8 +235,8 @@ module.exports.handler = handleErrors(
         path.join(MM_FILES_DIR, "GameEngine.jar"),
         "game",
         path.join(MM_FILES_DIR, "board.csv"),
-        '"KMG (Bot 1)"', // Kentucky Machinists Guild
-        '"NCD (Bot 2)"', // Neo-Chicago Defensive
+        '"KMG (P1)"', // Kentucky Machinists Guild
+        '"NCD (P2)"', // Neo-Chicago Defensive
         // MMDF - Midwestern Mechanized Defensive Force
         // "The Riggs" - bandits that stole mechs and use them to terrorize
         bot1IP,

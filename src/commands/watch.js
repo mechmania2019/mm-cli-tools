@@ -10,6 +10,7 @@ const inquirer = require("inquirer");
 const moment = require("moment");
 const chalk = require("chalk");
 
+const checkGameVersion = require("../utils/checkGameVersion");
 const handleErrors = require("../utils/handleErrors");
 const visualize = require("../utils/visualize");
 
@@ -23,9 +24,14 @@ const stat = promisify(fs.stat);
 module.exports.command = "watch";
 module.exports.describe = "Watch any match that your bot played";
 
-module.exports.builder = (yargs: any) => yargs;
+module.exports.builder = (yargs: any) =>
+  yargs.option("input", {
+    type: "string",
+    describe: "Provide a path to a logfile to visualize"
+  });
 
-module.exports.handler = handleErrors(async () => {
+module.exports.handler = handleErrors(async (argv: { input: ?string }) => {
+  const input = argv.input && path.resolve(argv.input);
   const team = await getTeam();
   const me = team.name;
 
@@ -36,6 +42,13 @@ module.exports.handler = handleErrors(async () => {
       "Could not find visualizer. Run `mm download` before trying this again."
     );
     process.exit(1);
+  }
+  await checkGameVersion();
+
+  if (input) {
+    console.log("Just using the input to visualize.");
+    await visualize(input);
+    return;
   }
 
   const choices = (await versions(team)).map(({ key, createdAt }) => ({

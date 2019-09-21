@@ -1,21 +1,47 @@
+//@flow
+const { promisify } = require("util");
 const path = require("path");
 const chalk = require("chalk");
 const fetch = require("node-fetch");
 const moment = require("moment");
 const inquirer = require("inquirer");
+const fs = require("fs");
+const os = require("os");
+const mkdirp = promisify(require("mkdirp"));
 
 const result = require("../../utils/result");
 const { getTeam } = require("../../utils/auth");
 const handleErrors = require("../../utils/handleErrors");
-const { stats, teams, versions, matches, log, runtimelog } = require("../../api");
+const { teams, versions, matches, log, runtimelog } = require("../../api");
+const { match: getMatch } = require("../../api");
+const visualize = require("../../utils/visualize");
+const checkGameVersion = require("../../utils/checkGameVersion");
+
+const TMP_DIR = path.join(os.tmpdir(), "mm");
+const LOG_PATH = path.join(TMP_DIR, "last.log.txt");
+const writeFile = promisify(fs.writeFile);
+const access = promisify(fs.access);
 
 module.exports.command = "user";
 module.exports.describe = false;
 
-module.exports.builder = yargs => yargs;
+module.exports.builder = (yargs: any) =>
+  yargs
+    .option("logfile", {
+      type: "string",
+      describe:
+        "Provide a path to a logfile to write the game logs to instead of watching it on the visualizer"
+    })
+    .option("input", {
+      type: "string",
+      describe: "Provide a path to a logfile to visualize"
+    });
 
-module.exports.handler = handleErrors(async argv => {
+module.exports.handler = handleErrors(
+  async (argv: { input: ?string, logfile: ?string }) => {
   const team = await getTeam();
+  const input = argv.input && path.resolve(argv.input);
+  const logfile = argv.logfile && path.resolve(argv.logfile);
 
   if (!team) {
     return console.log(
@@ -45,7 +71,7 @@ module.exports.handler = handleErrors(async argv => {
     versionIds.push(allUserVersions[i].key);
   }
 
-  const modes = ["info", "versions", "matches", "logs"];
+  const modes = ["info", "versions", "matches", "logs", "watch"];
 
   const { mode } = await inquirer.prompt([
     {
@@ -185,6 +211,72 @@ module.exports.handler = handleErrors(async argv => {
         }
       }
       break;
+
+      case "watch":
+        console.log("hello!");
+          if (!logfile) {
+            try {
+              await access(visualize.getVisualizer(), fs.constants.X_OK);
+            } catch (e) {
+              console.error(
+                "Could not find visualizer. Run `mm download` before trying this again."
+              );
+              process.exit(1);
+            }
+            await checkGameVersion();
+      
+            if (input) {
+              console.log("Just using the input to visualize.");
+              await visualize(input);
+              return;
+            }
+          }
+      
+          const remoteVersions = await versions(team);
+          if (!remoteVersions.length) {
+            console.log(
+              chalk.blue(
+                "This team has not pushed any bots yet."
+              )
+            );
+            process.exit(0);
+          }
+          const script = remoteVersions[0].key;
+      
+          console.log(`Fetching matches played for version: ${script}`);
+          const matchesPlayed = await matches(chosenTeam, script);
+      
+          if (matches.length < 1) {
+            console.log("This bot has not played any games yet.");
+            return;
+          }
+      
+          const { match } = await inquirer.prompt([
+            {
+              type: "list",
+              name: "match",
+              choices: matchesPlayed.map(m => ({
+                name: `${m.opponent} - ${result(m.result)}`,
+                value: m.match.key
+              }))
+            }
+          ]);
+      
+          console.log(`Fetching match ${match}`);
+          const matchDataRes = await getMatch(chosenTeam, match);
+      
+          // const t1 = matchDataRes.headers.get("x-team-1");
+          // const t2 = matchDataRes.headers.get("x-team-2");
+          const matchData = await matchDataRes.text();
+      
+          console.log("Setting up visualizer");
+          // Assert tmpdir
+          if (!logfile) {
+            await mkdirp(TMP_DIR);
+          }
+          await writeFile(logfile || LOG_PATH, matchData);
+          await visualize(logfile || LOG_PATH);
+    break;
 
     default:
       console.log("You broke the cli tool, congrats. Please report this");

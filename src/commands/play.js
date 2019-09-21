@@ -201,7 +201,7 @@ module.exports.handler = handleErrors(
       });
       procs.add(bot1proc);
       bot1proc.all.pipe(process.stdout);
-      bot1IP = "http://localhost:2019/";
+      bot1IP = "http://localhost:2020/";
     }
     if (bot2 === "HUMAN") {
       console.log("Bot 2 is a human player. Nothing needs to be started");
@@ -217,7 +217,7 @@ module.exports.handler = handleErrors(
       });
       procs.add(bot2proc);
       bot2proc.all.pipe(process.stdout);
-      bot2IP = "http://localhost:2525/";
+      bot2IP = "http://localhost:2626/";
     }
 
     if (bot1 !== "HUMAN" || bot2 !== "HUMAN") {

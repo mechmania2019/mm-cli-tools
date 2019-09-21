@@ -41,7 +41,7 @@ module.exports.builder = (yargs: any) =>
     })
     .option("visualizer", {
       type: "boolean",
-      defailt: true,
+      default: true,
       describe: "Enable the viusualizer"
     });
 

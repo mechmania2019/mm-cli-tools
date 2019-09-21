@@ -54,10 +54,7 @@ const push = async (team: ?Team, script: ReadableStream): Promise<?Team> => {
   return await res.json();
 };
 
-const log = async (
-  team: ?Team,
-  version: stringify
-  ): Promise<?Team> => {
+const log = async (team: ?Team, version: stringify): Promise<?Team> => {
   if (!isLoggedIn(team)) {
     console.error("Not logged in. Run `mm login` or `mm register` first.");
     process.exit(1);
@@ -75,10 +72,7 @@ const log = async (
   return res.text();
 };
 
-const runtimelog = async (
-  team: ?Team,
-  version: stringify
-  ): Promise<?Team> => {
+const runtimelog = async (team: ?Team, version: stringify): Promise<?Team> => {
   if (!isLoggedIn(team)) {
     console.error("Not logged in. Run `mm login` or `mm register` first.");
     process.exit(1);
@@ -225,7 +219,7 @@ const flusholdversions = async (team: ?Team): Promise<?any> => {
   if (res.status !== 200)
     throw Error(`ERROR(${res.status}): ${await res.text()}`);
   return res;
-}
+};
 
 module.exports = {
   login,

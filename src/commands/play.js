@@ -253,8 +253,8 @@ module.exports.handler = handleErrors(
     procs.delete(proc);
 
     console.log("Killing bots");
-    bot1proc.kill("SIGTERM");
-    bot2proc.kill("SIGTERM");
+    if (bot1 !== "HUMAN") bot1proc.kill("SIGTERM");
+    if (bot2 !== "HUMAN") bot2proc.kill("SIGTERM");
 
     if (argv.visualizer) {
       console.log("Setting up visualizer");
@@ -262,13 +262,13 @@ module.exports.handler = handleErrors(
     }
 
     try {
-      await bot1proc;
+      if (bot1 !== "HUMAN") await bot1proc;
     } catch (e) {}
     try {
-      await bot2proc;
+      if (bot2 !== "HUMAN") await bot2proc;
     } catch (e) {}
 
-    procs.delete(bot1proc);
-    procs.delete(bot2proc);
+    if (bot1 !== "HUMAN") procs.delete(bot1proc);
+    if (bot1 !== "HUMAN") procs.delete(bot2proc);
   }
 );

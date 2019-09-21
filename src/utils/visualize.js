@@ -16,7 +16,7 @@ const getVisualizer = () => {
         "Mac.app",
         "Contents",
         "MacOS",
-        "MM25"
+        "Mac"
       );
       break;
     case "win32":

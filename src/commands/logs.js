@@ -44,7 +44,7 @@ module.exports.handler = handleErrors(async () => {
     }
   ]);
 
-  console.log(`Getting the build logs for ${script}`);
+  console.log(`Getting the logs for ${script}`);
 
   const compileLogs = await log(team, script);
   const runtimeLogs = await runtimelog(team, script);

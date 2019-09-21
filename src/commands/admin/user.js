@@ -7,7 +7,7 @@ const inquirer = require("inquirer");
 const result = require("../../utils/result");
 const { getTeam } = require("../../utils/auth");
 const handleErrors = require("../../utils/handleErrors");
-const { stats, teams, versions, matches } = require("../../api");
+const { stats, teams, versions, matches, log, runtimelog } = require("../../api");
 
 module.exports.command = "user";
 module.exports.describe = false;
@@ -39,13 +39,13 @@ module.exports.handler = handleErrors(async argv => {
 
   const allUserVersions = await versions(chosenTeam);
 
-  const versionIds = []
+  const versionIds = [];
 
   for (let i = 0; i < allUserVersions.length; i++) {
     versionIds.push(allUserVersions[i].key);
   }
 
-  const modes = ["info", "versions", "matches"];
+  const modes = ["info", "versions", "matches", "logs"];
 
   const { mode } = await inquirer.prompt([
     {
@@ -64,7 +64,6 @@ module.exports.handler = handleErrors(async argv => {
       console.log(`Latest working script: ${chosenTeam.latestScript.key}`);
       break;
 
-
     case "versions":
       if (allUserVersions.length === 0) {
         console.log("This team has not pushed any scripts");
@@ -79,24 +78,27 @@ module.exports.handler = handleErrors(async argv => {
             choices: versionIds
           }
         ]);
-        const script = await fetch(`https://mechmania2019.s3.amazonaws.com/scripts/${chosenVersion.version}`);
-        const fileStream = fs.createWriteStream(require('path').join(require('os').homedir(), 'Desktop'));
-        await new promise((resolve,reject) =>{
+        const script = await fetch(
+          `https://mechmania2019.s3.amazonaws.com/scripts/${chosenVersion.version}`
+        );
+        const fileStream = fs.createWriteStream(
+          require("path").join(require("os").homedir(), "Desktop")
+        );
+        await new promise((resolve, reject) => {
           res.body.pipe(fileStream);
-          res.body.on("error",(err)=>{
+          res.body.on("error", err => {
             reject(err);
           });
-          fileStream.on("finish",function(){
+          fileStream.on("finish", function() {
             resolve();
           });
         });
       }
       break;
 
-
     case "matches":
       if (allUserVersions.length === 0) {
-        "This user has not pushed any scripts check back later.";
+        ("This user has not pushed any scripts check back later.");
       } else {
         const chosenVersion = await inquirer.prompt([
           {
@@ -112,23 +114,77 @@ module.exports.handler = handleErrors(async argv => {
         let ties = 0;
 
         for (let i = 0; i < allMatches.length; i++) {
-          if (allMatches[i].result === 'win') {
+          if (allMatches[i].result === "win") {
             wins++;
-          } else if (allMatches[i].result === 'loss') {
+          } else if (allMatches[i].result === "loss") {
             losses++;
           } else {
             ties++;
           }
-          console.log(`${allMatches[i].opponent.toString().padEnd(30, " ")} ${result(allMatches[i].result)}`);
+          console.log(
+            `${allMatches[i].opponent.toString().padEnd(30, " ")} ${result(
+              allMatches[i].result
+            )}`
+          );
         }
-        
-        console.log(
-          `${chalk.green(`Total Wins: ${wins}`)}, ${chalk.red(`Total Losses: ${losses}`)}, ${chalk.blue(`Total Ties: ${ties}`)}`
-        );
 
+        console.log(
+          `${chalk.green(`Total Wins: ${wins}`)}, ${chalk.red(
+            `Total Losses: ${losses}`
+          )}, ${chalk.blue(`Total Ties: ${ties}`)}`
+        );
       }
       break;
 
+    case "logs":
+      if (allUserVersions.length === 0) {
+        ("This user has not pushed any scripts check back later.");
+      } else {
+        const chosenVersion = await inquirer.prompt([
+          {
+            type: "list",
+            name: "version",
+            choices: versionIds
+          }
+        ]);
+
+        console.log(`Getting the logs for ${chosenVersion.version}`);
+
+        const compileLogs = await log(chosenTeam, chosenVersion.version);
+        const runtimeLogs = await runtimelog(chosenTeam, chosenVersion.version);
+
+        var allLogData =
+          "\n\n ------------------------- Compile logs ------------------------- \n\n";
+
+        try {
+          allLogData = allLogData.concat(compileLogs);
+        } catch (e) {
+          console.error(`Error in fetching compile logs`, e);
+        }
+
+        try {
+          allLogData = allLogData.concat(
+            "\n\n ------------------------- Runtime logs ------------------------- \n\n",
+            runtimeLogs
+          );
+        } catch (e) {
+          console.error(`Error in fetching runtime logs`, e);
+        }
+
+        try {
+          console.log(allLogData);
+          console.log(
+            chalk.blue(
+              "The logs from building your bot are above. If it has the phrase `Successfully built`, then it's all good! Otherwise, look at the errors and try to debug."
+            )
+          );
+        } catch (e) {
+          console.error(
+            `Error fetching your bot's logs. It may still be building. Try again later`
+          );
+        }
+      }
+      break;
 
     default:
       console.log("You broke the cli tool, congrats. Please report this");

@@ -16,7 +16,13 @@ module.exports.builder = (yargs: any) => yargs;
 module.exports.handler = handleErrors(async (argv: {}) => {
   const close = createRL();
   // prompt Team name and Email
-  const name = await cmdQuestion("Team Name: ");
+  let inputName = await cmdQuestion("Team Name: ");
+  while (inputName.length > 30) {
+    console.log("Team Name must be 30 characters or less.");
+    inputName = await cmdQuestion("Team Name: ");
+  }
+  const name = inputName;
+
   const email = await cmdQuestion(
     "Email (used for communication during/after the tournament): "
   );

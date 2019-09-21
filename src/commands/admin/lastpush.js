@@ -21,6 +21,12 @@ function TeamLog(name, script, latestPush) {
   this.LastPush = latestPush;
 }
 
+text_truncate = function(str, length) {
+  return str.length <= length
+    ? str
+    : str.substring(0, length) + "...";
+};
+
 module.exports.handler = handleErrors(async argv => {
   const team = await getTeam();
   if (!team) {
@@ -33,7 +39,7 @@ module.exports.handler = handleErrors(async argv => {
     teamList.map(
       ({ name, latestScript, mostRecentPush }) =>
         new TeamLog(
-        chalk.red(name),
+        `${chalk.red(text_truncate(name, 30))}`,
         latestScript
             ? `${latestScript.key} (${moment(latestScript.createdAt).fromNow()})`
             : `NA`,

@@ -21,9 +21,15 @@ const writeFile = promisify(fs.writeFile);
 const access = promisify(fs.access);
 const stat = promisify(fs.stat);
 
+const isWindows = process.platform.startsWith("win");
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+const winKill = proc =>
+  execa("taskill", ["-F", "-T", "-PID", proc.pid], { all: true }).all.pipe(
+    process.stdout
+  );
 
 let procs = new Set([]);
+const kill = proc => (isWindows ? winKill(proc) : proc.kill("SIGKILL"));
 let dying = false;
 onDeath(sig => {
   dying = true;
@@ -33,9 +39,9 @@ onDeath(sig => {
   console.log(`Killing ${Array.from(procs).length} processes`);
   Promise.all(
     Array.from(procs).map(async proc => {
-      const command = proc.spawnargs[2];
+      const command = isWindows ? proc.spawnargs[4] : proc.spawnargs[2];
       console.log(`Killing ${command}`);
-      proc.kill("SIGKILL");
+      kill(proc);
       try {
         await proc;
       } catch (e) {}
@@ -253,8 +259,8 @@ module.exports.handler = handleErrors(
     procs.delete(proc);
 
     console.log("Killing bots");
-    if (bot1 !== "HUMAN") bot1proc.kill("SIGTERM");
-    if (bot2 !== "HUMAN") bot2proc.kill("SIGTERM");
+    if (bot1 !== "HUMAN") kill(bot1proc);
+    if (bot2 !== "HUMAN") kill(bot2proc);
 
     if (argv.visualizer) {
       console.log("Setting up visualizer");

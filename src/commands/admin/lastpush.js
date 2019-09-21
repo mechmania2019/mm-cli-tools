@@ -39,7 +39,7 @@ module.exports.handler = handleErrors(async argv => {
     teamList.map(
       ({ name, latestScript, mostRecentPush }) =>
         new TeamLog(
-        `${chalk.red(text_truncate(name, 30))}`,
+        `${text_truncate(name, 30)}`,
         latestScript
             ? `${latestScript.key} (${moment(latestScript.createdAt).fromNow()})`
             : `NA`,

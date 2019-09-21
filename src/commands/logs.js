@@ -49,7 +49,7 @@ module.exports.handler = handleErrors(async () => {
   const compileLogs = await log(team, script);
   const runtimeLogs = await runtimelog(team, script);
 
-  var allLogData;
+  var allLogData = "\n\n ------------------------- Compile logs ------------------------- \n\n";
   
   try {
     allLogData = allLogData.concat(compileLogs);

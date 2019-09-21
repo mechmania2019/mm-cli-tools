@@ -98,7 +98,7 @@ module.exports.handler = handleErrors(async argv => {
 
     case "matches":
       if (allUserVersions.length === 0) {
-        ("This user has not pushed any scripts check back later.");
+        console.log("This user has not pushed any scripts check back later.");
       } else {
         const chosenVersion = await inquirer.prompt([
           {

@@ -1,6 +1,6 @@
 // @flow
 const chalk = require("chalk");
-const { log, versions } = require("../api");
+const { log, runtimelog, versions } = require("../api");
 const { getTeam } = require("../utils/auth");
 const handleErrors = require("../utils/handleErrors");
 const moment = require("moment");
@@ -46,10 +46,29 @@ module.exports.handler = handleErrors(async () => {
 
   console.log(`Getting the build logs for ${script}`);
 
-  const logs = await log(team, script);
+  const compileLogs = await log(team, script);
+  const runtimeLogs = await runtimelog(team, script);
+
+  var allLogData = "\n\n ------------------------- Compile logs ------------------------- \n\n";
+  
+  try {
+    allLogData = allLogData.concat(compileLogs);
+  } catch (e) {
+    console.error(
+      `Error in fetching compile logs`, e
+    )
+  }
 
   try {
-    console.log(logs);
+    allLogData = allLogData.concat("\n\n ------------------------- Runtime logs ------------------------- \n\n", runtimeLogs);
+  } catch (e) {
+    console.error(
+      `Error in fetching runtime logs`, e
+    )
+  }
+
+  try {
+    console.log(allLogData);
     console.log(
       chalk.blue(
         "The logs from building your bot are above. If it has the phrase `Successfully built`, then it's all good! Otherwise, look at the errors and try to debug."

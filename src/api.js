@@ -179,6 +179,17 @@ const match = async (team: ?Team, match: string): Promise<?any> => {
   return res;
 };
 
+const matchErrors = async (team: ?Team, match: string): Promise<?any> => {
+  const res = await fetch(`https://matches.mechmania.io/errors/${match}`, {
+    headers: {
+      Authorization: `Bearer ${team.token}`
+    }
+  });
+  if (res.status !== 200)
+    throw Error(`ERROR(${res.status}): ${await res.text()}`);
+  return res;
+};
+
 const leaderboard = async (team: ?Team): Promise<?any> => {
   const res = await fetch(`https://admin.mechmania.io/leaderboard`, {
     headers: {
@@ -236,5 +247,6 @@ module.exports = {
   queueall,
   flusholdversions,
   releases,
-  runtimelog
+  runtimelog,
+  matchErrors
 };

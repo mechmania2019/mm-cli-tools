@@ -24,7 +24,7 @@ const stat = promisify(fs.stat);
 const isWindows = process.platform.startsWith("win");
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const winKill = proc =>
-  execa("taskill", ["-F", "-T", "-PID", proc.pid], { all: true }).all.pipe(
+  execa("taskkill", ["-F", "-T", "-PID", proc.pid], { all: true }).all.pipe(
     process.stdout
   );
 
@@ -197,7 +197,7 @@ module.exports.handler = handleErrors(
         cwd: bot1,
         shell: true,
         all: true,
-        env: { PORT: 2019 }
+        env: { PORT: 2020 }
       });
       procs.add(bot1proc);
       bot1proc.all.pipe(process.stdout);
@@ -213,7 +213,7 @@ module.exports.handler = handleErrors(
         cwd: bot2,
         shell: true,
         all: true,
-        env: { PORT: 2525 }
+        env: { PORT: 2626 }
       });
       procs.add(bot2proc);
       bot2proc.all.pipe(process.stdout);

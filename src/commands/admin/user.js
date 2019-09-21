@@ -65,11 +65,18 @@ module.exports.handler = handleErrors(
 
   const allUserVersions = await versions(chosenTeam);
 
-  const versionIds = [];
-
-  for (let i = 0; i < allUserVersions.length; i++) {
-    versionIds.push(allUserVersions[i].key);
-  }
+  const versionIds = allUserVersions.map(
+    ({ key, createdAt, isLatestScript, isMostRecentPush }) => ({
+      name: `${moment(createdAt).from()}${
+        isLatestScript
+          ? chalk.green(" active")
+          : isMostRecentPush
+          ? chalk.yellow(" building")
+          : ""
+      }`,
+      value: key
+    })
+  );
 
   const modes = ["info", "versions", "matches", "logs", "watch"];
 
@@ -213,7 +220,6 @@ module.exports.handler = handleErrors(
       break;
 
       case "watch":
-        console.log("hello!");
           if (!logfile) {
             try {
               await access(visualize.getVisualizer(), fs.constants.X_OK);
@@ -232,7 +238,7 @@ module.exports.handler = handleErrors(
             }
           }
       
-          const remoteVersions = await versions(team);
+          const remoteVersions = await versions(chosenTeam);
           if (!remoteVersions.length) {
             console.log(
               chalk.blue(

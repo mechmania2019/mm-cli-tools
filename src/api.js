@@ -75,6 +75,27 @@ const log = async (
   return res.text();
 };
 
+const runtimelog = async (
+  team: ?Team,
+  version: stringify
+  ): Promise<?Team> => {
+  if (!isLoggedIn(team)) {
+    console.error("Not logged in. Run `mm login` or `mm register` first.");
+    process.exit(1);
+  }
+  const res = await fetch(`http://runlogpull.mechmania.io/${version}`, {
+    headers: {
+      Authorization: `Bearer ${team.token}`
+    }
+  });
+  if (res.status === 401) return null;
+  if (res.status !== 200) {
+    console.error(`ERROR(${res.status}): ${await res.text()}`);
+    process.exit(1);
+  }
+  return res.text();
+};
+
 const stats = async (
   team: ?Team,
   version: string
@@ -220,5 +241,6 @@ module.exports = {
   leaderboard,
   queueall,
   flusholdversions,
-  releases
+  releases,
+  runtimelog
 };

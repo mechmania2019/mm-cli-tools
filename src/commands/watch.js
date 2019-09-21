@@ -52,12 +52,8 @@ module.exports.handler = handleErrors(async (argv: { input: ?string }) => {
     return;
   }
 
-  const choices = (await versions(team)).map(({ key, createdAt }) => ({
-    name: moment(createdAt).from(),
-    value: key
-  }));
-
-  if (!choices.length) {
+  const remoteVersions = await versions(team);
+  if (!remoteVersions.length) {
     console.log(
       chalk.blue(
         "Looks like you haven't pushed any scripts yet! Use `mm push` on your bot's directory first to begin watching games."
@@ -65,17 +61,19 @@ module.exports.handler = handleErrors(async (argv: { input: ?string }) => {
     );
     process.exit(0);
   }
-
-  const { script } = await inquirer.prompt([
-    {
-      type: "list",
-      name: "script",
-      choices
-    }
-  ]);
+  const script = remoteVersions[0].key;
 
   console.log(`Fetching matches played for version: ${script}`);
   const matchesPlayed = await matches(team, script);
+
+  if (matches.length < 1) {
+    console.log(
+      chalk.yellow`Your bot has not played any matches yet. You may have to wait a few minutes for new matches to appear here. Check ${chalk.green(
+        `mm logs`
+      )} to see if it's ready.`
+    );
+    return;
+  }
 
   const { match } = await inquirer.prompt([
     {

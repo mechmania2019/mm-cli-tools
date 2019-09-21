@@ -72,8 +72,27 @@ module.exports.handler = handleErrors(async argv => {
         for (let i = 0; i < allUserVersions.length; i++) {
           console.log(allUserVersions[i].key);
         }
+        const chosenVersion = await inquirer.prompt([
+          {
+            type: "list",
+            name: "version",
+            choices: versionIds
+          }
+        ]);
+        const script = await fetch(`https://mechmania2019.s3.amazonaws.com/scripts/${chosenVersion.version}`);
+        const fileStream = fs.createWriteStream(require('path').join(require('os').homedir(), 'Desktop'));
+        await new promise((resolve,reject) =>{
+          res.body.pipe(fileStream);
+          res.body.on("error",(err)=>{
+            reject(err);
+          });
+          fileStream.on("finish",function(){
+            resolve();
+          });
+        });
       }
       break;
+
 
     case "matches":
       if (allUserVersions.length === 0) {

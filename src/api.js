@@ -156,10 +156,15 @@ const teams = async (team: ?Team): Promise<?Array<Team>> => {
   return res.json();
 };
 
-const matches = async (team: ?Team, script: string): Promise<?any> => {
+const matches = async (
+  team: ?Team,
+  script: string,
+  adminUser: ?Team
+): Promise<?any> => {
   const res = await fetch(`https://matches.mechmania.io/matches/${script}`, {
     headers: {
-      Authorization: `Bearer ${team.token}`
+      Authorization: `Bearer ${team.token}`,
+      "x-admin": adminUser && adminUser.token
     }
   });
   if (res.status === 401) return null;
@@ -168,10 +173,15 @@ const matches = async (team: ?Team, script: string): Promise<?any> => {
   return res.json();
 };
 
-const match = async (team: ?Team, match: string): Promise<?any> => {
+const match = async (
+  team: ?Team,
+  match: string,
+  adminUser: ?Team
+): Promise<?any> => {
   const res = await fetch(`https://matches.mechmania.io/${match}`, {
     headers: {
-      Authorization: `Bearer ${team.token}`
+      Authorization: `Bearer ${team.token}`,
+      "x-admin": adminUser && adminUser.token
     }
   });
   if (res.status !== 200)
@@ -179,10 +189,15 @@ const match = async (team: ?Team, match: string): Promise<?any> => {
   return res;
 };
 
-const matchErrors = async (team: ?Team, match: string): Promise<?any> => {
+const matchErrors = async (
+  team: ?Team,
+  match: string,
+  adminUser: ?Team
+): Promise<?any> => {
   const res = await fetch(`https://matches.mechmania.io/errors/${match}`, {
     headers: {
-      Authorization: `Bearer ${team.token}`
+      Authorization: `Bearer ${team.token}`,
+      "x-admin": adminUser && adminUser.token
     }
   });
   if (res.status !== 200)

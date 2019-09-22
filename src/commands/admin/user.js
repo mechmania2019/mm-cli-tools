@@ -148,7 +148,11 @@ module.exports.handler = handleErrors(
               choices: versionIds
             }
           ]);
-          const allMatches = await matches(chosenTeam, chosenVersion.version);
+          const allMatches = await matches(
+            chosenTeam,
+            chosenVersion.version,
+            team
+          );
 
           let wins = 0;
           let losses = 0;
@@ -249,7 +253,7 @@ module.exports.handler = handleErrors(
         const script = remoteVersions[0].key;
 
         console.log(`Fetching matches played for version: ${script}`);
-        const matchesPlayed = await matches(chosenTeam, script);
+        const matchesPlayed = await matches(chosenTeam, script, team);
 
         if (matches.length < 1) {
           console.log("This bot has not played any games yet.");
@@ -268,8 +272,8 @@ module.exports.handler = handleErrors(
         ]);
 
         console.log(`Fetching match ${match}`);
-        const matchDataRes = await getMatch(chosenTeam, match);
-        const errorLogsRes = await matchErrors(chosenTeam, match);
+        const matchDataRes = await getMatch(chosenTeam, match, team);
+        const errorLogsRes = await matchErrors(chosenTeam, match, team);
 
         // const t1 = matchDataRes.headers.get("x-team-1");
         // const t2 = matchDataRes.headers.get("x-team-2");
@@ -285,7 +289,9 @@ module.exports.handler = handleErrors(
         console.log(`Wrote game log file to ${logfile || LOG_PATH}`);
         if (logfile) {
           await writeFile(logfile + ".error", errorLogs);
-          console.log(`Wrote stderr from the game engine to ${logfile + ".error"}`);
+          console.log(
+            `Wrote stderr from the game engine to ${logfile + ".error"}`
+          );
         }
         if (visualizer) {
           await visualize(logfile || LOG_PATH);

@@ -34,7 +34,7 @@
     "inquirer": "6.2.0",
     "lodash": "4.17.19",
     "mkdirp": "0.5.1",
-    "moment": "2.22.2",
+    "moment": "2.29.2",
     "node-fetch": "2.2.0",
     "ondeath": "^1.0.0",
     "opn": "6.0.0",
